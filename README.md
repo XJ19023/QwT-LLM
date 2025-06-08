@@ -41,7 +41,7 @@ Implementation of **QwT**, a simple, fast, and general approach to network quant
 
 ## 🛠️ Usage
 
-Please see [**classification readme**](https://github.com/wujx2001/QwT/blob/main/classification/README.md) for instructions to reproduce classification results and see [**detection readme**](https://github.com/wujx2001/QwT/blob/main/classification/README.md) for instructions to reproduce detection results.
+Please see [**classification readme**](https://github.com/wujx2001/QwT/blob/main/classification/README.md) for instructions to reproduce classification results and see [**detection readme**](https://github.com/wujx2001/QwT/blob/main/detection/README.md) for instructions to reproduce detection results.
 
 ---
 
