@@ -428,34 +428,16 @@ def main():
         _ = q_model(calib_data)
 
     ptq_params = compute_quantized_params(q_model, local_rank=args.local_rank, log_file=args.log_file)
-    _write('ptq model size is {:.3f}'.format(ptq_params))
-
+    _write('RepQ-ViT model size is {:.3f}'.format(ptq_params))
     top1_acc_eval = validate(q_model, loader_eval)
-    _write('ptq   eval_acc: {:.2f}'.format(top1_acc_eval.avg))
+    _write('RepQ-ViT   eval_acc: {:.2f}'.format(top1_acc_eval.avg))
 
     q_model = generate_compensation_model(q_model, loader_train, args)
 
     qwerty_params = compute_quantized_params(q_model, local_rank=args.local_rank, log_file=args.log_file)
-    _write('qwerty model size is {:.3f}'.format(qwerty_params))
-
-    # for name, module in q_model.named_modules():
-    #     if isinstance(module, QuantConv2d) or isinstance(module, QuantLinear) or isinstance(module, QuantMatMul):
-    #         if hasattr(module, 'use_input_quant'):
-    #             use_input_quant = module.use_input_quant
-    #         else:
-    #             use_input_quant = None
-    #
-    #         if hasattr(module, 'use_weight_quant'):
-    #             use_weight_quant = module.use_weight_quant
-    #         else:
-    #             use_weight_quant = None
-    #
-    #         if args.local_rank == 0:
-    #             _write('module : {}, input_quant : {}, weight_quant : {}'.format(name, use_input_quant, use_weight_quant))
-
-
+    _write('RepQ-ViT + QwT model size is {:.3f}'.format(qwerty_params))
     top1_acc_eval = validate(q_model, loader_eval)
-    _write('compensation   eval_acc: {:.2f}'.format(top1_acc_eval.avg))
+    _write('RepQ-ViT + QwT   eval_acc: {:.2f}'.format(top1_acc_eval.avg))
 
 
 def validate(model, loader):

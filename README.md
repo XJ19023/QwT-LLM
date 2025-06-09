@@ -30,8 +30,6 @@ Implementation of **QwT**, a simple, fast, and general approach to network quant
 
 ## 📦 Installation
 
-- We recommend using Timm version 0.4.12.
-
 - **To install QwT and develop locally:**
 
 ```bash

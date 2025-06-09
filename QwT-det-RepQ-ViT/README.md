@@ -2,8 +2,6 @@
 
 This repository extends [mmdetection](https://github.com/open-mmlab/mmdetection) and [RepQ-ViT-Detection](https://github.com/zkkli/RepQ-ViT/tree/main/detection) to reproduce QwT’s object-detection results on COCO.
 
----
-
 ## Preliminaries
 
 - **Install MMCV via MIM**  

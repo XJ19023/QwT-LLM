@@ -1,6 +1,10 @@
-## Quantization without Tears
+# Quantization without Tears
 
 The following instructions explain how to reproduce QwT’s ImageNet classification results using the post-training quantization method [RepQ-ViT](https://arxiv.org/abs/2212.08254).
+
+## Recommended dependencies
+  - Timm v0.4.12
+  - PyTorch ≥ 2.0
 
 
 ## Evaluation
@@ -32,7 +36,7 @@ optional arguments:
 CUDA_VISIBLE_DEVICES=0 python qwt_vit_and_deit.py --model deit_small --data_dir <YOUR_DATA_DIR> --w_bit 4 --a_bit 4
 
 # 4 GPU
-CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.launch --nproc_per_node 4 --master_port 12661 python qwt_vit_and_deit.py --model deit_small --data_dir <YOUR_DATA_DIR> --w_bit 4 --a_bit 4
+CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.launch --nproc_per_node 4 --master_port 12661 qwt_vit_and_deit.py --model deit_small --data_dir <YOUR_DATA_DIR> --w_bit 4 --a_bit 4
 ```
 
 ## Results
