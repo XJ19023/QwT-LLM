@@ -32,7 +32,7 @@ Implementation of **QwT**, a simple, fast, and general approach to network quant
 
 - **2025-06-09**: Released code showcasing QwT integrated with the baseline PTQ method RepQ-ViT for both classification and detection tasks. <img src="imgs/new.gif" alt="NEW" width="40"/>
 - **2025-02-27**: QwT is accepted by CVPR 2025 [link](https://openaccess.thecvf.com/content/CVPR2025/html/Fu_Quantization_without_Tears_CVPR_2025_paper.html).
-- **2024-11-28**: QwT preprint published on ([arXiv:2411.13918](https://arxiv.org/abs/2411.13918)).
+- **2024-11-21**: QwT preprint published on ([arXiv:2411.13918](https://arxiv.org/abs/2411.13918)).
 
 ---
 
