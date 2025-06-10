@@ -542,6 +542,7 @@ def main():
                 eval_kwargs.pop(key, None)
             eval_kwargs.update(dict(metric=args.eval, **kwargs))
             print(dataset.evaluate(outputs, **eval_kwargs))
+    torch.cuda.synchronize()
 
     q_model.module.backbone = generate_compensation_model(q_model.module.backbone, qwerty_calibration_loader, args)
 
@@ -570,6 +571,7 @@ def main():
                 eval_kwargs.pop(key, None)
             eval_kwargs.update(dict(metric=args.eval, **kwargs))
             print(dataset.evaluate(outputs, **eval_kwargs))
+    torch.cuda.synchronize()
 
 
 if __name__ == '__main__':
