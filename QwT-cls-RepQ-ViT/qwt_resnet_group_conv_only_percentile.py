@@ -16,33 +16,34 @@ Hacked together by / Copyright 2020 Ross Wightman (https://github.com/rwightman)
 """
 import argparse
 import copy
+import os.path
 import random
 import socket
-from contextlib import suppress
 from functools import partial
-from tqdm import tqdm
 
 import torch.distributed
-import torch.distributed as dist
 import torch.utils.data
-from timm.data import Mixup
 from timm.data.dataset import ImageDataset
-from timm.loss import SoftTargetCrossEntropy
-from timm.utils import random_seed, NativeScaler, accuracy
-from torch.amp import autocast as amp_autocast
-from torch.nn.parallel import DistributedDataParallel as NativeDDP
-from timm.scheduler.scheduler_factory import CosineLRScheduler
+from timm.utils import accuracy
 from torch.utils.data import Dataset
+from tqdm import tqdm
 
 from quant import *
 from utils import *
-from utils.utils import write, create_transform, create_loader, AverageMeter, broadcast_tensor_from_main_process, gather_tensor_from_multi_processes, compute_quantized_params
+from utils.resnet import resnet101, resnet50, resnet18
+from utils.utils import write, create_transform, create_loader, AverageMeter, broadcast_tensor_from_main_process, \
+    gather_tensor_from_multi_processes, compute_quantized_params
 
 HOST_NAME = socket.getfqdn(socket.gethostname())
 
 torch.backends.cudnn.benchmark = True
 LINEAR_COMPENSATION_SAMPLES = 512
 
+model_path = {
+    'resnet18': 'pretrained_weights/resnet18_imagenet.pth.tar',
+    'resnet50': 'pretrained_weights/resnet50_imagenet.pth.tar',
+    'resnet101': 'pretrained_weights/resnet101-63fe2227.pth'
+}
 
 def seed(seed=0):
     random.seed(seed)
@@ -53,12 +54,13 @@ def seed(seed=0):
     torch.backends.cudnn.deterministic = True
 
 class CompensationBlock(nn.Module):
-    def __init__(self, W, b, r2_score, block, linear_init=True, local_rank=0, block_id=None):
+    def __init__(self, W, b, r2_score, block, groups, linear_init=True, local_rank=0, block_id=None):
         super(CompensationBlock, self).__init__()
         self.block = block
+        self.groups = groups
 
-        self.lora_weight = nn.Parameter(torch.zeros((W.size(0), W.size(1))))
-        self.lora_bias = nn.Parameter(torch.zeros(W.size(1)))
+        self.lora_weight = nn.Parameter(torch.zeros((W.size(0), W.size(1), W.size(2), W.size(3))))
+        self.lora_bias = nn.Parameter(torch.zeros(b.size(0)))
 
         if linear_init and (r2_score > 0):
             self.lora_weight.data.copy_(W)
@@ -73,13 +75,24 @@ class CompensationBlock(nn.Module):
 
     def forward(self, x):
         out = self.block(x)
-        if self.training:
-            lora_weight = self.lora_weight.float()
-            out = out + x @ lora_weight + self.lora_bias
+
+        B, C_X, H_X, W_X = x.size()
+        _, C_Y, H_Y, W_Y = out.size()
+
+        if (H_X == H_Y) and (W_X == W_Y):
+            stride = 1
+        elif (H_X // 2 == H_Y) and (W_X // 2 == W_Y):
+            stride = 2
         else:
-            # QwT layers run in half mode
-            lora_weight = self.lora_weight.half()
-            out = out + (x.half() @ lora_weight).float() + self.lora_bias
+            raise NotImplementedError
+
+        if self.training:
+            qwt_out = F.conv2d(x, self.lora_weight, self.lora_bias, stride=stride, padding=int(self.lora_weight.size(-1) // 2), groups=self.groups)
+        else:
+            qwt_out = F.conv2d(x.half(), self.lora_weight.half(), None, stride=stride, padding=int(self.lora_weight.size(-1) // 2), groups=self.groups)
+            qwt_out = qwt_out.float() + self.lora_bias.reshape(1, -1, 1, 1)
+
+        out = out + qwt_out
 
         return out
 
@@ -103,25 +116,74 @@ class FeatureDataset(Dataset):
     def __getitem__(self, item):
         return self.X[item]
 
-def lienar_regression(X, Y, block_id=0):
-    X = X.reshape(-1, X.size(-1))
+def lienar_regression(X, Y, kernel_size=3, groups=4, block_id=0):
+    X = gather_tensor_from_multi_processes(X, args.world_size)
+    Y = gather_tensor_from_multi_processes(Y, args.world_size)
 
-    X = gather_tensor_from_multi_processes(X, world_size=args.world_size)
+    B, C_X, H_X, W_X = X.size()
+    _, C_Y, H_Y, W_Y = Y.size()
 
-    X_add_one = torch.cat([X, torch.ones(size=[X.size(0), ], device=X.device).reshape(-1, 1)], dim=-1)
-    Y = Y.reshape(-1, Y.size(-1))
+    if (H_X == H_Y) and (W_X == W_Y):
+        stride = 1
+    elif (H_X // 2 == H_Y) and (W_X // 2 == W_Y):
+        stride = 2
+    else:
+        raise NotImplementedError
 
-    Y = gather_tensor_from_multi_processes(Y, world_size=args.world_size)
+    # calculate channles per group
+    C_per_group = C_X // groups
+    _C_per_group = C_Y // groups
 
-    _write('the shape of X_add_one is {}, Y is {}'.format(X_add_one.size(), Y.size()))
+    # use Unfold to extract local patchs for each group
+    unfold = nn.Unfold(kernel_size=kernel_size, stride=stride, padding=int(kernel_size//2))
 
-    X_add_one_T = X_add_one.t()
-    W_overall = torch.inverse(X_add_one_T @ X_add_one) @ X_add_one_T @ Y
+    # process input and output in a group-wise manner
+    weights_list = []
+    bias_list = []
+    for g in range(groups):
+        # input channels for current group
+        X_group = X[:, g * C_per_group: (g + 1) * C_per_group, :, :]
 
-    W = W_overall[:-1, :]
-    b = W_overall[-1, :]
+        # input patchs for current group
+        X_unfold_group = unfold(X_group)  # [B, C_per_group * kernel_size * kernel_size, L]
+        L = X_unfold_group.shape[-1]
 
-    Y_pred = X @ W + b
+        # output channels for current group
+        Y_group = Y[:, g * _C_per_group: (g + 1) * _C_per_group, :, :]
+
+        # flatting Y
+        Y_flat_group = Y_group.view(B, _C_per_group, -1)  # [B, _C_per_group, L]
+
+        # concate all batchs to form an integrated equations
+        X_batch_all = X_unfold_group.permute(0, 2, 1).reshape(-1, C_per_group * kernel_size * kernel_size)  # [B*L, C_per_group * kernel_size * kernel_size]
+        Y_batch_all = Y_flat_group.permute(0, 2, 1).reshape(-1, _C_per_group)  # [B*L, _C_per_group]
+
+        # bias term
+        X_with_bias = torch.cat([X_batch_all, torch.ones(X_batch_all.shape[0], 1).cuda()], dim=1)  # [B*L, C_per_group * kernel_size * kernel_size + 1]
+
+        regularization = 1e-3
+        # add regularization term in case that XTX is inreversible
+        XTX = X_with_bias.T @ X_with_bias
+        XTX_reg = XTX + regularization * torch.eye(XTX.shape[0]).cuda()
+
+        # analytical solution for linear regression
+        W = torch.inverse(XTX_reg) @ X_with_bias.T @ Y_batch_all  # [C_per_group * kernel_size * kernel_size + 1, _C_per_group]
+
+        # decoule W and b
+        M_group = W[:-1, :].T
+        b_group = W[-1, :]
+
+        weights_list.append(M_group)
+        bias_list.append(b_group)
+
+    M_reshaped = torch.cat(weights_list, dim=0).view(C_Y, C_X // groups, kernel_size, kernel_size)
+
+    b_final = torch.cat(bias_list, dim=0)  # [_C]
+
+    W = M_reshaped
+    b = b_final
+
+    Y_pred = F.conv2d(X, W, b, stride=stride, padding=kernel_size//2, groups=groups)
 
     abs_loss = (Y - Y_pred).abs().mean()
 
@@ -152,23 +214,24 @@ def generate_compensation_model(q_model, train_loader, args):
     feature_loader = torch.utils.data.DataLoader(feature_set, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
 
     output_previous = output_t
-    for layer_id in range(len(q_model.layers)):
-        current_layer = q_model.layers[layer_id]
-        for block_id in range(len(current_layer.blocks)):
+    sup_layers = [q_model.layer1, q_model.layer2, q_model.layer3, q_model.layer4]
+    for sup_id in range(len(sup_layers)):
+        current_sup_layer = sup_layers[sup_id]
+        for layer_id in range(len(current_sup_layer)):
 
             feature_set.X = output_previous.detach().cpu()
 
-            block = current_layer.blocks[block_id]
+            layer = current_sup_layer[layer_id]
             output_full_precision = torch.zeros(size=[0, ], device=args.device)
             output_quant = torch.zeros(size=[0, ], device=args.device)
             output_t_ = torch.zeros(size=[0, ], device=args.device)
             for i, t_out in tqdm(enumerate(feature_loader)):
                 t_out = t_out.cuda()
-                disable_quant(block)
-                full_precision_out = block(t_out)
+                disable_quant(layer)
+                full_precision_out = layer(t_out)
 
-                enable_quant(block)
-                quant_out = block(t_out)
+                enable_quant(layer)
+                quant_out = layer(t_out)
 
                 output_t_ = torch.cat([output_t_, t_out.detach()], dim=0)
                 output_full_precision = torch.cat([output_full_precision, full_precision_out.detach()], dim=0)
@@ -179,21 +242,18 @@ def generate_compensation_model(q_model, train_loader, args):
                     break
 
             assert torch.sum((output_previous - output_t_).abs()) < 1e-3
-            global_block_id = sum(q_model.depths[:layer_id]) + block_id
-            W, b, r2_score = lienar_regression(output_t_, output_full_precision - output_quant, block_id=global_block_id)
-            current_layer.blocks[block_id] = CompensationBlock(W=W, b=b, r2_score=r2_score, block=current_layer.blocks[block_id], linear_init=True if global_block_id >= args.start_block else False, local_rank=args.local_rank, block_id=global_block_id)
+            global_layer_id = sum(q_model.depths[:sup_id]) + layer_id
+            W, b, r2_score = lienar_regression(output_t_, output_full_precision - output_quant, kernel_size=args.kernel_size, groups=max(output_t_.size(1) // args.factor, 1), block_id=global_layer_id)
+            current_sup_layer[layer_id] = CompensationBlock(W=W, b=b, r2_score=r2_score, block=current_sup_layer[layer_id], groups=max(output_t_.size(1) // args.factor, 1), linear_init=True if (global_layer_id >= args.start_block) else False, local_rank=args.local_rank, block_id=global_layer_id)
             q_model.cuda()
 
-            qwerty_block = current_layer.blocks[block_id]
+            qwerty_layer = current_sup_layer[layer_id]
 
             output_previous = torch.zeros(size=[0, ], device=args.device)
             for i, t_out in tqdm(enumerate(feature_loader)):
                 t_out = t_out.cuda()
-                enable_quant(qwerty_block)
-                previous_out = qwerty_block(t_out)
-
-                if (current_layer.downsample is not None) and (block_id == len(current_layer.blocks)-1):
-                    previous_out = current_layer.downsample(previous_out)
+                enable_quant(qwerty_layer)
+                previous_out = qwerty_layer(t_out)
 
                 output_previous = torch.cat([output_previous, previous_out.detach()], dim=0)
 
@@ -205,12 +265,14 @@ def generate_compensation_model(q_model, train_loader, args):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--model", default="swin_tiny", choices=['swin_tiny', 'swin_small'], help="model")
+parser.add_argument("--model", default="resnet18", choices=['resnet18', 'resnet50', 'resnet101'], help="model")
 parser.add_argument('--data_dir', default='/opt/Dataset/ImageNet', type=str)
 
 parser.add_argument('--w_bits', default=4, type=int, help='bit-precision of weights')
-parser.add_argument('--a_bits', default=4, type=int, help='bit-precision of activation')
+parser.add_argument('--a_bits', default=4, type=int, help='bit-precision of activations')
 parser.add_argument('--start_block', default=0, type=int)
+parser.add_argument('--kernel_size', default=1, type=int)
+parser.add_argument('--factor', default=64, type=int)
 
 parser.add_argument("--batch_size", default=32, type=int, help="batchsize of validation set")
 parser.add_argument('--num_workers', default=4, type=int)
@@ -224,21 +286,9 @@ test_aug = 'large_scale_test'
 args.drop_path = 0.0
 args.num_classes = 1000
 
-model_type = args.model.split("_")[0]
-if model_type == "deit":
-    mean = (0.485, 0.456, 0.406)
-    std = (0.229, 0.224, 0.225)
-    crop_pct = 0.875
-elif model_type == 'vit':
-    mean = (0.5, 0.5, 0.5)
-    std = (0.5, 0.5, 0.5)
-    crop_pct = 0.9
-elif model_type == 'swin':
-    mean = (0.485, 0.456, 0.406)
-    std = (0.229, 0.224, 0.225)
-    crop_pct = 0.9
-else:
-    raise NotImplementedError
+mean = (0.485, 0.456, 0.406)
+std = (0.229, 0.224, 0.225)
+crop_pct = 0.875
 
 args.distributed = False
 if 'WORLD_SIZE' in os.environ:
@@ -256,7 +306,7 @@ if args.distributed:
 assert args.rank >= 0
 
 
-args.log_dir = os.path.join('checkpoint', args.model, 'QwT', 'bs_{}_worldsize_{}_w_{}_a_{}_startblock_{}_sed_{}'.format(args.batch_size, args.world_size, args.w_bits, args.a_bits, args.start_block, args.seed))
+args.log_dir = os.path.join('checkpoint', args.model, 'QwTGroupConv', 'bs_{}_worldsize_{}_w_{}_a_{}_kernelsize_{}_factor_{}_startblock_{}_sed_{}' .format(args.batch_size, args.world_size, args.w_bits, args.a_bits, args.kernel_size, args.factor, args.start_block, args.seed))
 
 args.log_file = os.path.join(args.log_dir, 'log.txt')
 
@@ -267,6 +317,8 @@ if args.local_rank == 0:
 
     if os.path.isfile(args.log_file):
         os.remove(args.log_file)
+else:
+    time.sleep(1)
 
 torch.cuda.synchronize()
 
@@ -327,106 +379,84 @@ def main():
         persistent_workers=False
     )
 
-    for data, target in loader_train:
+    for data, _ in loader_train:
         calib_data = data.to(args.device)
         break
 
     broadcast_tensor_from_main_process(calib_data, args)
     _write('local_rank : {} calib_data shape : {} value : {}'.format(args.local_rank, calib_data.size(), calib_data[0, 0, 0, :5]))
 
-    model_zoo = {
-        'swin_tiny' : 'swin_tiny_patch4_window7_224',
-        'swin_small': 'swin_small_patch4_window7_224'
-    }
 
-    #Quant using RepQ-ViT
+
     _write('Building model ...')
-    model = build_model(model_zoo[args.model], args)
+    if args.model == 'resnet18':
+        model = resnet18(num_classes=args.num_classes, pretrained=False)
+    elif args.model == 'resnet50':
+        model = resnet50(num_classes=args.num_classes, pretrained=False)
+    elif args.model == 'resnet101':
+        model = resnet101(num_classes=args.num_classes, pretrained=False)
+    else:
+        raise NotImplementedError
+
+    checkpoint = torch.load(model_path[args.model], map_location='cpu')
+    model.load_state_dict(checkpoint)
+
     model.to(args.device)
     model.eval()
 
-    base_model = copy.deepcopy(model)
+    fp32_model = copy.deepcopy(model)
+    base_model = fp32_model
 
     wq_params = {'n_bits': args.w_bits, 'channel_wise': True}
     aq_params = {'n_bits': args.a_bits, 'channel_wise': False}
-    q_model = quant_model(model, input_quant_params=aq_params, weight_quant_params=wq_params)
+    q_model = quant_model_resnet(model, input_quant_params=aq_params, weight_quant_params=wq_params)
     q_model.to(args.device)
     q_model.eval()
-
 
     # Initial quantization
     _write('Performing initial quantization ...')
     set_quant_state(q_model, input_quant=True, weight_quant=True)
+
+    # for resnet, only the percentile-calibration is performed
     with torch.no_grad():
         _ = q_model(calib_data)
 
-    # Scale reparameterization
-    _write('Performing scale reparameterization ...')
-    with torch.no_grad():
-        module_dict = {}
-        q_model_slice = q_model.layers if 'swin' in args.model else q_model.blocks
-        for name, module in q_model_slice.named_modules():
-            module_dict[name] = module
-            idx = name.rfind('.')
-            if idx == -1:
-                idx = 0
-            father_name = name[:idx]
-            if father_name in module_dict:
-                father_module = module_dict[father_name]
-            else:
-                raise RuntimeError(f"father module {father_name} not found")
 
-            if 'norm1' in name or 'norm2' in name or 'norm' in name:
-                if 'norm1' in name:
-                    next_module = father_module.attn.qkv
-                elif 'norm2' in name:
-                    next_module = father_module.mlp.fc1
-                else:
-                    next_module = father_module.reduction
-
-                act_delta = next_module.input_quantizer.delta.reshape(-1)
-                act_zero_point = next_module.input_quantizer.zero_point.reshape(-1)
-                act_min = -act_zero_point * act_delta
-
-                target_delta = torch.mean(act_delta)
-                target_zero_point = torch.mean(act_zero_point)
-                target_min = -target_zero_point * target_delta
-
-                r = act_delta / target_delta
-                b = act_min / r - target_min
-
-                module.weight.data = module.weight.data / r
-                module.bias.data = module.bias.data / r - b
-
-                next_module.weight.data = next_module.weight.data * r
-                if next_module.bias is not None:
-                    next_module.bias.data = next_module.bias.data + torch.mm(next_module.weight.data, b.reshape(-1, 1)).reshape(-1)
-                else:
-                    next_module.bias = Parameter(torch.Tensor(next_module.out_features))
-                    next_module.bias.data = torch.mm(next_module.weight.data, b.reshape(-1, 1)).reshape(-1)
-
-                next_module.input_quantizer.channel_wise = False
-                next_module.input_quantizer.delta = target_delta
-                next_module.input_quantizer.zero_point = target_zero_point
-                next_module.weight_quantizer.inited = False
-
-    # Re-calibration
-    set_quant_state(q_model, input_quant=True, weight_quant=True)
-    with torch.no_grad():
-        _ = q_model(calib_data)
+    fp32_params = compute_quantized_params(fp32_model, local_rank=args.local_rank, log_file=args.log_file)
+    _write('FP32 model size is {:.3f}'.format(fp32_params))
 
     ptq_params = compute_quantized_params(q_model, local_rank=args.local_rank, log_file=args.log_file)
-    _write('RepQ-ViT model size is {:.3f}'.format(ptq_params))
+    _write('Percentile model size is {:.3f}'.format(ptq_params))
+
+    top1_acc_eval = validate(fp32_model, loader_eval)
+    _write('FP32 model   eval_acc: {:.2f}'.format(top1_acc_eval.avg))
+
     top1_acc_eval = validate(q_model, loader_eval)
-    _write('RepQ-ViT   eval_acc: {:.2f}'.format(top1_acc_eval.avg))
+    _write('Percentile   eval_acc: {:.2f}'.format(top1_acc_eval.avg))
 
     q_model = generate_compensation_model(q_model, loader_train, args)
 
     qwerty_params = compute_quantized_params(q_model, local_rank=args.local_rank, log_file=args.log_file)
-    _write('RepQ-ViT + QwT model size is {:.3f}'.format(qwerty_params))
-    top1_acc_eval = validate(q_model, loader_eval)
-    _write('RepQ-ViT + QwT   eval_acc: {:.2f}'.format(top1_acc_eval.avg))
+    _write('QwT model size is {:.3f}'.format(qwerty_params))
 
+    for name, module in q_model.named_modules():
+        if isinstance(module, QuantConv2d) or isinstance(module, QuantLinear) or isinstance(module, QuantMatMul):
+            if hasattr(module, 'use_input_quant'):
+                use_input_quant = module.use_input_quant
+            else:
+                use_input_quant = None
+
+            if hasattr(module, 'use_weight_quant'):
+                use_weight_quant = module.use_weight_quant
+            else:
+                use_weight_quant = None
+
+            if args.local_rank == 0:
+                _write('module : {}, input_quant : {}, weight_quant : {}'.format(name, use_input_quant, use_weight_quant))
+
+
+    top1_acc_eval = validate(q_model, loader_eval)
+    _write('Percentile + QwT   eval_acc: {:.2f}'.format(top1_acc_eval.avg))
 
 def validate(model, loader):
     top1_m = AverageMeter()

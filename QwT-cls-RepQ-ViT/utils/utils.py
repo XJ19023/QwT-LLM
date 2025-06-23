@@ -424,4 +424,4 @@ def compute_quantized_params(model, local_rank=0, log_file=None):
                         # if local_rank == 0:
                         #     write('quantized_params : {}.{} : {} * {} = {}'.format(_name_, k, n_bits_, numel, num_bits), log_file=log_file)
 
-    return quantized_params // 8 / 1e6
+    return quantized_params // 8 / 1e6 #MB

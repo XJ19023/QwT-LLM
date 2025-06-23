@@ -30,7 +30,8 @@ Implementation of **QwT**, a simple, fast, and general approach to network quant
 
 ## 📌 Changelog
 
-- **2025-06-09**: Released code showcasing QwT integrated with the baseline PTQ method RepQ-ViT for both classification and detection tasks. <img src="imgs/new.gif" alt="NEW" width="40"/>
+- **2025-06-23**: Release code implementing QwT + ResNet, evaluated on ImageNet. <img src="imgs/new.gif" alt="NEW" width="40"/>
+- **2025-06-09**: Release code showcasing QwT integrated with the baseline PTQ method RepQ-ViT for both classification and detection tasks.
 - **2025-02-27**: QwT is accepted by CVPR 2025 [link](https://openaccess.thecvf.com/content/CVPR2025/html/Fu_Quantization_without_Tears_CVPR_2025_paper.html).
 - **2024-11-21**: QwT preprint published on ([arXiv:2411.13918](https://arxiv.org/abs/2411.13918)).
 
@@ -48,7 +49,7 @@ Implementation of **QwT**, a simple, fast, and general approach to network quant
 ## 🛠️ Usage
 
 For detailed reproduction instructions, please refer to:
-- [**QwT-Classification-RepQ-ViT README**](https://github.com/wujx2001/QwT/blob/main/QwT-cls-RepQ-ViT/README.md) — how to reproduce ImageNet classification results of QwT using RepQ-ViT as baseline.
+- [**QwT-Classification-RepQ-ViT README**](https://github.com/wujx2001/QwT/blob/main/QwT-cls-RepQ-ViT/README.md) — how to reproduce ImageNet classification results of QwT using RepQ-ViT and Percentile as baseline.
 - [**QwT-Detection-RepQ-ViT README**](https://github.com/wujx2001/QwT/blob/main/QwT-det-RepQ-ViT/README.md) — how to reproduce COCO detection results of QwT using RepQ-ViT as baseline.
 
 ---

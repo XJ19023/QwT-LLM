@@ -43,19 +43,6 @@ HOST_NAME = socket.getfqdn(socket.gethostname())
 torch.backends.cudnn.benchmark = True
 LINEAR_COMPENSATION_SAMPLES = 512
 
-def mark_trainable_parameters(model: nn.Module, model_type):
-    for n, p in model.named_parameters():
-        if 'lora_' not in n:
-            p.requires_grad = False
-
-    try:
-        model.head.weight.requires_grad = True
-        model.head.bias.requires_grad = True
-    except:
-        model.module.head.weight.requires_grad = True
-        model.module.head.bias.requires_grad = True
-
-
 def seed(seed=0):
     random.seed(seed)
     np.random.seed(seed)

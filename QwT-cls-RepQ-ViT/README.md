@@ -21,14 +21,17 @@ CUDA_VISIBLE_DEVICE=<YOUR GPU ID> python -m torch.distributed.launch --nproc_per
 scripts:
    on vit & deit --- qwt_vit_and_deit.py
    on swin       --- qwt_swin.py
+   on resnet     --- qwt_resnet_group_conv_only_percentile.py
 optional arguments:
 --model: Model architecture, the choises can be: 
-    vit_small, vit_base, deit_tiny, deit_small, deit_base, swin_tiny, swin_small ...
+    vit_small, vit_base, deit_tiny, deit_small, deit_base, swin_tiny, swin_small, resnet18, resnet50, resnet101 ...
 --data_dir: Path to ImageNet dataset.
 --w_bit: Bit-precision of weights, default=4.
 --a_bit: Bit-precision of activation, default=4.
+--kernel_size: kernel size for QwT layers (only avaliable for ResNet)
+--factor: the number of channels in one group for QwT layers (only avaliable for ResNet)
 ```
-
+- Note: We only implement the percentile quantization for ResNet, corresponding to results on Table 11 in paper.
 - Example: Quantize *DeiT-S* at W4/A4 precision:
 
 ```bash
@@ -38,6 +41,15 @@ CUDA_VISIBLE_DEVICES=0 python qwt_vit_and_deit.py --model deit_small --data_dir 
 # 4 GPU
 CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.launch --nproc_per_node 4 --master_port 12661 qwt_vit_and_deit.py --model deit_small --data_dir <YOUR_DATA_DIR> --w_bit 4 --a_bit 4
 ```
+
+- Get the checkpoints for resnet models and place them in *pretrained_weights* directory.
+
+| Backbone | Pretrain | Source | Weights |
+| :---: | :---: | :---: | :---: |
+| ResNet18 | ImageNet-1K         | [BRECQ](https://github.com/yhhhli/BRECQ/releases/tag/v1.0) |[ckpt](https://github.com/yhhhli/BRECQ/releases/download/v1.0/resnet18_imagenet.pth.tar) |
+| ResNet50 | ImageNet-1K         | [BRECQ](https://github.com/yhhhli/BRECQ/releases/tag/v1.0) | [ckpt](https://github.com/yhhhli/BRECQ/releases/download/v1.0/resnet50_imagenet.pth.tar) |
+| ResNet101 | ImageNet-1K | [torchvision](https://github.com/pytorch/vision/tree/main/references/classification#resnet) | [ckpt](https://download.pytorch.org/models/resnet101-63fe2227.pth) |
+
 
 ## Results
 
@@ -65,6 +77,12 @@ Below are the results obtained on the ImageNet dataset using our proposed QwT.
 |                          | RepQ-ViT + QwT | W4/A4 | 75.5     | W6/A6 | 80.7    |
 | Swin-S (83.2)            |  RepQ-ViT      | W4/A4 | 80.2     | W6/A6 | 82.8    |
 |                          | RepQ-ViT + QwT | W4/A4 | 80.4     | W6/A6 | 82.9    |
+| ResNet18 (71.0)          |  Percentile      | W4/A4 |  58.3    | W6/A6 |  70.7   |
+|                          | Percentile + QwT | W4/A4 |  68.9    | W6/A6 |  71.0   |
+| ResNet50 (76.6)          |  Percentile      | W4/A4 | 68.4     | W6/A6 | 76.0    |
+|                          | Percentile + QwT | W4/A4 | 74.5     | W6/A6 | 76.8    |
+| ResNet101 (77.3)         |  Percentile      | W4/A4 | 74.7     | W6/A6 | 77.1    |
+|                          | Percentile + QwT | W4/A4 | 76.4     | W6/A6 | 77.2    |
 
 ## Citation
 

@@ -20,12 +20,12 @@ def lp_loss(pred, tgt, p=2.0, reduction='none'):
 class RoundSTE(torch.autograd.Function):
     @staticmethod
     def forward(ctx, x):
-        # 前向传播使用 torch.round()
+        # torch.round() for forward pass
         return torch.round(x)
 
     @staticmethod
     def backward(ctx, grad_output):
-        # 反向传播时直接传递梯度，相当于忽略了 torch.round 的不可微分性
+        # straight-through estimation for back-propagation
         return grad_output
 
 
