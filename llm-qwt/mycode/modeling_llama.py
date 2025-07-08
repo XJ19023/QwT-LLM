@@ -86,7 +86,7 @@ from functools import partial
 def pseudo_quantize_tensor( w, 
                             n_bit=8, 
                             zero_point=True, 
-                            q_group_size=-128, 
+                            q_group_size=128, 
                             inplace=False, 
                             get_scale_zp=False, 
                             clam_quant_en=False, 
@@ -114,16 +114,32 @@ def pseudo_quantize_tensor( w,
         ).mul_(scales)
     else:
         if clam_quant_en:
-            w_int = torch.clamp(torch.round(w / scales) + zeros, min_int, max_int) # quantized INT8
-            w_int = w_int.reshape(-1, 128) # del this line if per group
-            # with open('log/INT8.txt', 'a') as f:
-            #     f.writelines(f'>>> {w_int[:10, :]}\n')
-            max = w_int.amax(dim=-1, keepdim=True)
-            min = w_int.amin(dim=-1, keepdim=True)
-            present_range = max - min
-            even = (max + min) // 2 # stored tensor
-            w_int -= even
-            clamp_idx = (present_range <= 63) * (present_range > 15)
+            if q_group_size < 0: # per channel
+                w_int = torch.clamp(torch.round(w / scales) + zeros, min_int, max_int) # quantized INT8
+                w_int = w_int.reshape(-1, 128)
+                max = w_int.amax(dim=-1, keepdim=True)
+                min = w_int.amin(dim=-1, keepdim=True)
+                present_range = max - min
+                even = (max + min) // 2 # stored tensor
+                w_int -= even
+                clamp_idx = (present_range <= 63) * (present_range > 15)
+            if q_group_size > 0:
+                w_int = torch.clamp(torch.round(w / scales) + zeros, min_int, max_int) # quantized INT8
+                mean_bit_width = (torch.floor(torch.log2(w_int.clamp(min=1))) + 1).sum(dim=1, keepdim=True) / 128
+                # mean_bit_width = torch.floor(torch.log2((tensor.sum(dim=1) / 128).clamp(min=1)).float()) + 1
+                clamp_idx = (mean_bit_width <= 6) * (mean_bit_width > 4)
+                even = 0
+                ''' Profiling
+                with open('log/profiling.txt', 'a') as f:
+                    total_num = w_int.size(0)
+                    int4 = mean_bit_width <= 4
+                    int5_6 = (mean_bit_width > 4) * (mean_bit_width <= 6) 
+                    int7_8 = mean_bit_width > 6
+                    f.writelines(f'int4: {int4.sum() / total_num:>6.5f} ')
+                    f.writelines(f'int5_6: {int5_6.sum() / total_num:>6.5f} ')
+                    f.writelines(f'int7_8: {int7_8.sum() / total_num:>6.5f}\n')
+                '''
+            
             clamp_idx = clamp_idx.expand(-1, w_int.size(-1))
             # print(f'Total: {clamp_idx.numel()}, Clamp: {clamp_idx.sum()}')
             w_int_clamp = w_int.masked_fill(~clamp_idx, 0)
@@ -133,12 +149,9 @@ def pseudo_quantize_tensor( w,
             w_int_clamp = (w_int_clamp // 4)  # round to floor
             # w_int_clamp = (w_int_clamp / 4).int()  # trancate
             w_int_clamp *= 4
-            # with open('log/after_clamp.txt', 'a') as f:
-            #     f.writelines(f'>>> {w_int_clamp[:10, :5]}\n')
             w_int = w_int_clamp + w_int_left + even
             # with open('log/final.txt', 'a') as f:
             #     f.writelines(f'>>> {w_int[:10, :]}\n')
-            w_int = w_int.reshape(org_w_shape)  # del this line if per group
             w = (w_int- zeros) * scales
         else:
             w = (torch.clamp(torch.round(w / scales) + zeros, min_int, max_int) - zeros) * scales

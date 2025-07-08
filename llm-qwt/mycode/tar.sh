@@ -35,6 +35,9 @@ cd /cephfs/juxin/git_test ; \
 echo -e "${comment}" > "${SOURCE_DIR}/backup.log"
 tar --exclude="${SOURCE_DIR}/.cache" \
     --exclude="${SOURCE_DIR}/.local/share/Trash" \
+    --exclude="${SOURCE_DIR}/llm-qwt/mycode/__pycache__" \
+    --exclude="${SOURCE_DIR}/.git" \
+    --exclude="${SOURCE_DIR}/llm-qwt/quant" \
     -czvf "$BACKUP_PATH" "$SOURCE_DIR"
 
 rm "${SOURCE_DIR}/backup.log"

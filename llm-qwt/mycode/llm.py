@@ -3,6 +3,7 @@ to speedup debug, set length=512, n_sample=1, use opt-125m
 开源代码量化后的结果向中间结果做线性回归，此版本修改为向全精度对齐
 '''
 import os
+import shutil
 import sys
 import torch
 import torch.nn as nn
@@ -200,6 +201,7 @@ def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, cla
     seq_len = 2048
     if model_name == 'opt-125m':
         hidden_dim = 768
+        qwt_begin_block = -1
     if model_name == 'opt-1.3b':
         hidden_dim = 2048
         qwt_begin_block = 5 # need modify
@@ -548,6 +550,7 @@ if args.eval_clamp_qwt:
     print(f'clamp qwt PPL: {ppl}')
     with open(f'log/{args.model_name}/ppl.txt', 'a') as f:
         f.writelines(f'clamp qwt PPL: {ppl}\n')
+    # shutil.move('log/profiling.txt', f'log/{args.model_name}')
 
 ''' For debug
 # 用test.ipynb对比base版本和qwt版本的hidden_state的mse
