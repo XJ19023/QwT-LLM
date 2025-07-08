@@ -194,23 +194,37 @@ def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, cla
     if 'opt' in args.model_name.lower():
         forward_before_blocks = model.model.decoder.forward_before_blocks
         layers = model.model.decoder.layers
+    if 'llama' in args.model_name.lower():
+        forward_before_blocks = model.model.forward_before_blocks
+        layers = model.model.layers
     seq_len = 2048
     if model_name == 'opt-125m':
         hidden_dim = 768
     if model_name == 'opt-1.3b':
         hidden_dim = 2048
+        qwt_begin_block = 5 # need modify
     if model_name == 'opt-2.7b':
         hidden_dim = 2560
+        qwt_begin_block = 5 # need modify
     if model_name == 'opt-6.7b':
         hidden_dim = 4096
+        qwt_begin_block = 5 # need modify
     if model_name == 'opt-13b':
         hidden_dim = 5120
+        qwt_begin_block = 5 # need modify
+
+    if model_name == 'TinyLlama-1.1B-Chat-v1.0':
+        hidden_dim = 2048
+        qwt_begin_block = -1
     layer_inputs = torch.empty((train_samples, seq_len, hidden_dim), dtype=torch.bfloat16, device="cuda")
     # layer_inputs = []
     for i in tqdm(range(train_samples), desc="Before layers..."):
         batch = dataset[:, (i * 2048) : ((i + 1) * 2048)].to(model.device)
         with torch.no_grad():
-            hidden_states, causal_attention_mask, use_cache = forward_before_blocks(batch)
+            if 'opt' in args.model_name.lower():
+                hidden_states, causal_attention_mask, use_cache = forward_before_blocks(batch)
+            if 'llama' in args.model_name.lower():
+                hidden_states, position_ids, past_key_values, use_cache, cache_position, position_embeddings = forward_before_blocks(batch)
             layer_inputs[i] = hidden_states[0].detach()
             # layer_inputs.append(hidden_states.detach())  # ⚠️ 挪回 CPU
             del batch, hidden_states
@@ -238,15 +252,32 @@ def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, cla
                 f.writelines(f'before_layers.{layer_idx}.input.dtype, {layer_input.dtype}\t {layer_input.shape}\n')
             '''
             set_quant_state(layer, quant=False, clamp=False)
-            # append_activation(f'qwt_layers.{layer_idx}.input_full', layer_input_full)
             if 'opt' in args.model_name.lower():
                 layer_output = layer(layer_input_full, causal_attention_mask, use_cache=use_cache)
-            # append_activation(f'qwt_layers.{layer_idx}.output_full', layer_output[0])
+            if 'llama' in args.model_name.lower():
+                ''' For debug
+                append_activation(f'qwt_layers.{layer_idx}.input_full', layer_input_full)
+                with open('log/123_qwt.log', 'a') as f:
+                    f.writelines(f'>>>> QwT {input_idx} <<<<\n')
+                    f.writelines(f'input_ids type: {type(layer_input_full)} {layer_input_full.shape}\n')
+                    # f.writelines(f'attention_mask type: {type(attention_mask)} {attention_mask}\n')
+                    f.writelines(f'position_ids type: {type(position_ids)} {position_ids}\n')
+                    f.writelines(f'past_key_values type: {type(past_key_values)} {past_key_values}\n')
+                    # f.writelines(f'inputs_embeds type: {type(inputs_embeds)} {inputs_embeds}\n')
+                    f.writelines(f'use_cache type: {type(use_cache)} {use_cache}\n')
+                    # f.writelines(f'output_attentions type: {type(output_attentions)} {output_attentions}\n')
+                    # f.writelines(f'output_hidden_states type: {type(output_hidden_states)} {output_hidden_states}\n')
+                    f.writelines(f'cache_position type: {type(cache_position)} {cache_position}\n\n')
+                    f.writelines(f'position_embeddings type: {type(position_embeddings)}\n\n')
+                '''
+                layer_output = layer(layer_input_full, position_ids=position_ids, past_key_values=past_key_values, use_cache=use_cache, cache_position=cache_position, position_embeddings=position_embeddings)
             # layer_outputs.append(layer_output[0].detach())
             layer_outputs[input_idx] = layer_output[0][0].detach()
             set_quant_state(layer, quant=True, clamp=clamp)
             if 'opt' in args.model_name.lower():
                 layer_output_quant = layer(layer_input, causal_attention_mask, use_cache=use_cache)
+            if 'llama' in args.model_name.lower():
+                layer_output_quant = layer(layer_input, position_ids=position_ids, past_key_values=past_key_values, use_cache=use_cache, cache_position=cache_position, position_embeddings=position_embeddings)
             # append_activation(f'qwt_layers.{layer_idx}.input_qwt', layer_input)
             # layer_outputs_quant.append(layer_output_quant[0].detach())
             layer_outputs_quant[input_idx] = layer_output_quant[0][0].detach()
@@ -257,7 +288,7 @@ def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, cla
         # if r2_score > 0:
 
         # layer_outputs_wandb = torch.empty((train_samples, seq_len, hidden_dim), dtype=torch.bfloat16, device="cuda")
-        if layer_idx > 5 and r2_score > 0:
+        if layer_idx > qwt_begin_block and r2_score > 0:
             layer.set_qwt_para(W, b, r2_score)
             set_quant_state(layer, quant=True, clamp=clamp)
 
@@ -267,6 +298,8 @@ def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, cla
                 # set_quant_state(layer, quant=True, clamp=clamp)
                 if 'opt' in args.model_name.lower():
                     layer_output_wandb = layer(layer_input, causal_attention_mask, use_cache=use_cache)
+                if 'llama' in args.model_name.lower():
+                    layer_output_wandb = layer(layer_input, position_ids=position_ids, past_key_values=past_key_values, use_cache=use_cache, cache_position=cache_position, position_embeddings=position_embeddings)
                 # layer_outputs_quant.append(layer_output_wandb[0].detach())
                 layer_outputs_quant[input_idx] = layer_output_wandb[0][0].detach()
             # layer_inputs = torch.cat(layer_outputs_quant, dim=0)
@@ -287,6 +320,8 @@ def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, cla
                     # set_quant_state(layer, quant=True, clamp=clamp)
                     if 'opt' in args.model_name.lower():
                         layer_output_wandb = layer(layer_input, causal_attention_mask, use_cache=use_cache)
+                    if 'llama' in args.model_name.lower():
+                        layer_output_wandb = layer(layer_input, position_ids=position_ids, past_key_values=past_key_values, use_cache=use_cache, cache_position=cache_position, position_embeddings=position_embeddings)
                     # layer_outputs_quant.append(layer_output_wandb[0].detach())
                     layer_outputs_quant[input_idx] = layer_output_wandb[0][0].detach()
                 # layer_inputs = torch.cat(layer_outputs_quant, dim=0)
@@ -302,6 +337,8 @@ def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, cla
                 # set_quant_state(layer, quant=True, clamp=clamp)
                 if 'opt' in args.model_name.lower():
                     layer_output_wandb = layer(layer_input, causal_attention_mask, use_cache=use_cache)
+                if 'llama' in args.model_name.lower():
+                    layer_output_wandb = layer(layer_input, position_ids=position_ids, past_key_values=past_key_values, use_cache=use_cache, cache_position=cache_position, position_embeddings=position_embeddings)
                 # layer_outputs_quant.append(layer_output_wandb[0].detach())
                 layer_outputs_quant[input_idx] = layer_output_wandb[0][0].detach()
             # layer_inputs = torch.cat(layer_outputs_quant, dim=0)
@@ -502,12 +539,13 @@ if args.eval_clamp_qwt:
     with open(f'log/{args.model_name}/ppl.txt', 'a') as f:
         f.writelines(f'clamp qwt PPL: {ppl}\n')
 
-
+''' For debug
 # 用test.ipynb对比base版本和qwt版本的hidden_state的mse
 saved_name = args.model_name.replace("-", "_").replace(".", "_")
-dir=f'/cephfs/shared/juxin/saved_tensor/qwt/{saved_name}'
+dir=f'/cephfs/shared/juxin/saved_tensor/qwt/{saved_name}_qwt'
 os.makedirs(dir, exist_ok=True)
 save_tensors(dir=dir)
+'''
 # ----------------------------------------------------------
 end_time = time.time()
 duration = end_time - start_time

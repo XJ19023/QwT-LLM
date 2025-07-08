@@ -6,4 +6,5 @@
 ## 📌 Changelog
 
 - **2025-07-08**: Release code implementing QwT + OPT, evaluated on WikiText. <img src="imgs/new.gif" alt="NEW" width="40"/>
+- **2025-07-08**: Implementing QwT + Llama, under evaluated. 
 ---

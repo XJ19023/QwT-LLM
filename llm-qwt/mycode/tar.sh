@@ -2,7 +2,7 @@
 start_time=$(date +%s)  # 记录开始时间
 # -------------------------------------------------------------------------
 # 1. 设置变量
-SOURCE_DIR="QwT"        # 当前用户的 home 目录
+SOURCE_DIR="QwT-LLM"        # 当前用户的 home 目录
 BACKUP_DIR="/cephfs/juxin/backup"               # 修改为你想保存备份的目录
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S") # 当前时间戳
 BACKUP_NAME="backup_${TIMESTAMP}.tar.gz"
@@ -31,7 +31,7 @@ mkdir -p "$BACKUP_DIR"
 
 # 3. 执行打包（忽略缓存等大文件夹，可自定义）
 echo "back up from ${SOURCE_DIR} to ${BACKUP_PATH} ..."
-cd /cephfs/juxin ; \
+cd /cephfs/juxin/git_test ; \
 echo -e "${comment}" > "${SOURCE_DIR}/backup.log"
 tar --exclude="${SOURCE_DIR}/.cache" \
     --exclude="${SOURCE_DIR}/.local/share/Trash" \

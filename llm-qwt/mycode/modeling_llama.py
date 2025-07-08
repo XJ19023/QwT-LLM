@@ -1193,21 +1193,21 @@ class LlamaModel(LlamaPreTrainedModel):
                     position_embeddings,
                 )
             else:
+                ''' For debug
+                append_activation(f'base_layers.{idx}.input', hidden_states)
+                with open('log/123_base.log', 'a') as f:
+                    f.writelines(f'>>>> LlamaModel {idx} <<<<\n')
+                    f.writelines(f'input_ids type: {type(input_ids)} {input_ids.shape}\n')
+                    f.writelines(f'attention_mask type: {type(attention_mask)} {attention_mask}\n')
+                    f.writelines(f'position_ids type: {type(position_ids)} {position_ids}\n')
+                    f.writelines(f'past_key_values type: {type(past_key_values)} {past_key_values}\n')
+                    f.writelines(f'inputs_embeds type: {type(inputs_embeds)} {inputs_embeds}\n')
+                    f.writelines(f'use_cache type: {type(use_cache)} {use_cache}\n')
+                    f.writelines(f'output_attentions type: {type(output_attentions)} {output_attentions}\n')
+                    f.writelines(f'output_hidden_states type: {type(output_hidden_states)} {output_hidden_states}\n')
+                    f.writelines(f'cache_position type: {type(cache_position)} {cache_position}\n\n')
+                    f.writelines(f'position_embeddings type: {type(position_embeddings)}\n\n')
                 '''
-                # append_activation(f'layers.{idx}.input', hidden_states)
-                # append_activation(f'layers.{idx}.attention_mask', causal_mask)
-                if idx == 0:
-                    with open('log/123.log', 'a') as f:
-                        # f.writelines(f'layers.{idx}.hidden_states.dtype, {type(hidden_states)}\n') # tensor
-                        # f.writelines(f'layers.{idx}.causal_mask.dtype, {type(causal_mask)}\n') # None
-                        # f.writelines(f'layers.{idx}.position_ids.dtype, {type(position_ids)}\n') # tensor
-                        f.writelines(f'layers.{idx}.past_key_values.dtype, {type(past_key_values)}, {past_key_values}\n')
-                        f.writelines(f'layers.{idx}.output_attentions.dtype, {type(output_attentions)}, {output_attentions}\n')
-                        f.writelines(f'layers.{idx}.use_cache.dtype, {type(use_cache)}, {use_cache}\n')
-                        # f.writelines(f'layers.{idx}.cache_position.dtype, {type(cache_position)}\n') # tensor
-                        f.writelines(f'layers.{idx}.position_embeddings.dtype, {type(position_embeddings)}, {position_embeddings}\n')
-                '''
-
                 layer_outputs = decoder_layer(
                     hidden_states,
                     attention_mask=causal_mask,
@@ -1404,6 +1404,17 @@ class LlamaForCausalLM(LlamaPreTrainedModel):
         )
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
         # decoder outputs consists of (dec_features, layer_state, dec_hidden, dec_attn)
+        with open('log/123.log', 'a') as f:
+            f.writelines(f'>>>> LlamaForCausalLM <<<<')
+            f.writelines(f'input_ids type: {type(input_ids)} {input_ids.shape}\n')
+            f.writelines(f'attention_mask type: {type(attention_mask)} {attention_mask}\n')
+            f.writelines(f'position_ids type: {type(position_ids)} {position_ids}\n')
+            f.writelines(f'past_key_values type: {type(past_key_values)} {past_key_values}\n')
+            f.writelines(f'inputs_embeds type: {type(inputs_embeds)} {inputs_embeds}\n')
+            f.writelines(f'use_cache type: {type(use_cache)} {use_cache}\n')
+            f.writelines(f'output_attentions type: {type(output_attentions)} {output_attentions}\n')
+            f.writelines(f'output_hidden_states type: {type(output_hidden_states)} {output_hidden_states}\n')
+            f.writelines(f'cache_position type: {type(cache_position)} {cache_position}\n\n')
         outputs = self.model(
             input_ids=input_ids,
             attention_mask=attention_mask,
