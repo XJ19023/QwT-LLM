@@ -1,0 +1,28 @@
+
+<class 'transformers.models.opt.modeling_opt.OPTForCausalLM'>
+
+OPTForCausalLM(
+  (model): OPTModel(
+    (decoder): OPTDecoder(
+      (embed_tokens): Embedding(50272, 2048, padding_idx=1)
+      (embed_positions): OPTLearnedPositionalEmbedding(2050, 2048)
+      (final_layer_norm): LayerNorm((2048,), eps=1e-05, elementwise_affine=True)
+      (layers): ModuleList(
+        (0-23): 24 x OPTDecoderLayer(
+          (self_attn): OPTAttention(
+            (k_proj): quantLinear(in_features=2048, out_features=2048, bias=True, quant_en=True, clamp_quant=True)
+            (v_proj): quantLinear(in_features=2048, out_features=2048, bias=True, quant_en=True, clamp_quant=True)
+            (q_proj): quantLinear(in_features=2048, out_features=2048, bias=True, quant_en=True, clamp_quant=True)
+            (out_proj): quantLinear(in_features=2048, out_features=2048, bias=True, quant_en=True, clamp_quant=True)
+          )
+          (activation_fn): ReLU()
+          (self_attn_layer_norm): LayerNorm((2048,), eps=1e-05, elementwise_affine=True)
+          (fc1): quantLinear(in_features=2048, out_features=8192, bias=True, quant_en=True, clamp_quant=True)
+          (fc2): quantLinear(in_features=8192, out_features=2048, bias=True, quant_en=True, clamp_quant=True)
+          (final_layer_norm): LayerNorm((2048,), eps=1e-05, elementwise_affine=True)
+        )
+      )
+    )
+  )
+  (lm_head): Linear(in_features=2048, out_features=50272, bias=False)
+)
