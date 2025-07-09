@@ -2,6 +2,7 @@
   <img src="imgs/QwT_illustration.png" width="500px" />
 </div>
 
+- transformers = 4.43.0
 
 ## 📌 Changelog
 
@@ -10,4 +11,5 @@
 - **2025-07-08**: QwT + OPT/Llama is good, implement per group compress. 
 - **2025-07-08**: Per group compress under evaluated. 
 - **2025-07-09**: Evaluate per group compress. 
+- **2025-07-09**: Implementing QwT + Qwen, result not good, under optimization. 
 ---

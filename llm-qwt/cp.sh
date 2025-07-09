@@ -39,9 +39,9 @@ cpdir_with_progress() {
 
 # cpdir_with_progress /cephfs/shared/wangzw/LLM_models/TinyLlama-1.1B-Chat-v1.0 /localssd/lbxj/TinyLlama-1.1B-Chat-v1.0
 # cpdir_with_progress /cephfs/shared/wangzw/LLM_models/llama-2-7b-hf /localssd/lbxj/llama-2-7b-hf
-# cpdir_with_progress /cephfs/shared/wangzw/LLM_models/llama-2-7b-hf /localssd/lbxj/llama-2-7b-hf
 
-cpdir_with_progress /cephfs/shared/fangchao/models/Meta-Llama-3-8B /localssd/lbxj/Meta-Llama-3-8B
+cpdir_with_progress /cephfs/shared/wangzw/LLM_models/Qwen3-8B /localssd/lbxj/Qwen3-8B
+# cpdir_with_progress /cephfs/shared/juxin/models/Qwen3-1.7B /localssd/lbxj/Qwen3-1.7B
 # -------------------------------------------------------------------------
 end_time=$(date +%s)  # 记录结束时间
 duration=$((end_time - start_time))

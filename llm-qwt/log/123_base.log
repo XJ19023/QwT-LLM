@@ -1,0 +1,333 @@
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+attention_mask type: <class 'NoneType'> None
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+past_key_values type: <class 'NoneType'> None
+output_attentions type: <class 'bool'> False
+use_cache type: <class 'bool'> False
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Model <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
+position_embeddings type: <class 'tuple'>
+
+output_hidden_states type: <class 'dict'> {}
+>>>> Before Forward <<<<
+hidden_states type: <class 'torch.Tensor'> torch.Size([1, 2048, 2048])
+position_ids type: <class 'torch.Tensor'> tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
+cache_position type: <class 'torch.Tensor'> tensor([   0,    1,    2,  ..., 2045, 2046, 2047], device='cuda:0')
+
