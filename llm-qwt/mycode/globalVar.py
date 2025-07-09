@@ -52,6 +52,14 @@ def get_clamped_quant_enable():
     global clamped_quant_enable
     return clamped_quant_enable
 
+profiling_enable = False
+def set_profiling_enable():
+    global profiling_enable
+    profiling_enable = True
+def get_profiling_enable():
+    global profiling_enable
+    return profiling_enable
+
 data_type = None
 def set_data_type(dataType):
     global data_type

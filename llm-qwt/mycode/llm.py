@@ -18,7 +18,12 @@ from torch.utils.data import Dataset
 import time
 from datetime import datetime
 import sys
-from globalVar import get_save_tensor_enable, save_tensors, set_save_tensor_enable, set_data_type, append_activation
+from globalVar import (get_save_tensor_enable,
+                       save_tensors,
+                       set_save_tensor_enable,
+                       set_data_type,
+                       append_activation,
+                       set_profiling_enable)
 
 def gather_tensor_from_multi_processes(input, world_size):
     if world_size == 1:
@@ -86,6 +91,7 @@ parser.add_argument("--eval_quant", action="store_true")
 parser.add_argument("--eval_clamp", action="store_true")
 parser.add_argument("--eval_quant_qwt", action="store_true")
 parser.add_argument("--eval_clamp_qwt", action="store_true")
+parser.add_argument("--profiling", action="store_true")
 args = parser.parse_args()
 
 class Evaluator:
@@ -544,21 +550,18 @@ if args.eval_clamp_qwt:
         f.writelines(f'\n==========train clamp qwt============\n') 
     cal_wandb_to_full(model, train_data, tokenizer, "cuda", train_samples, clamp=True, model_name=args.model_name)
     with open(f'log/{args.model_name}/structure_clamp_qwt.txt', 'w') as f:
-        f.writelines(f'{type(model)}\n\n{model}')  
-    # set_quant_state(model, quant=True, clamp=True) # 需要手动修改clamp
-    # if 'opt' in args.model_name.lower():
-    #     model.model.decoder.set_linear_regression()
-    # if 'llama' in args.model_name.lower():
-    #     model.model.set_linear_regression()
-    # cal_wandb(model, train_data, tokenizer, "cuda", 2)
-    # with open(f'log/{args.model_name}/structure_qwt.txt', 'w') as f:
-    #     f.writelines(f'\n{type(model)}\n\n{model}')
-    # set_quant_state(model, quant=True, clamp=True)
+        f.writelines(f'{type(model)}\n\n{model}')
+    if args.profiling:
+        set_profiling_enable()
     ppl = evaluator.evaluate(model)
     print(f'clamp qwt PPL: {ppl}')
     with open(f'log/{args.model_name}/ppl.txt', 'a') as f:
         f.writelines(f'clamp qwt PPL: {ppl}\n')
-    # shutil.move('log/profiling.txt', f'log/{args.model_name}')
+
+    dst = f'log/{args.model_name}/profiling.txt'
+    if os.path.exists(dst):
+        os.remove(dst)
+    shutil.move('log/profiling.txt', dst)
 
 ''' For debug
 # 用test.ipynb对比base版本和qwt版本的hidden_state的mse

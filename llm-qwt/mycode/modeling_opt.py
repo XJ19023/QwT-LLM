@@ -59,7 +59,7 @@ _SEQ_CLASS_EXPECTED_LOSS = 1.71
 _SEQ_CLASS_EXPECTED_OUTPUT = "'LABEL_0'"
 
 # ------------from there to add -------------
-from globalVar import increas_iterationCounter, get_iterationCounter, get_save_tensor_enable, append_activation, append_weight, get_data_type, get_clamped_quant_enable
+from globalVar import increas_iterationCounter, get_iterationCounter, get_save_tensor_enable, append_activation, append_weight, get_data_type, get_clamped_quant_enable, get_profiling_enable
 from torch.nn.parameter import Parameter, UninitializedParameter
 from torch import Tensor
 import math
@@ -69,7 +69,7 @@ from functools import partial
 def pseudo_quantize_tensor( w, 
                             n_bit=8, 
                             zero_point=True, 
-                            q_group_size=128, 
+                            q_group_size=128, # <0 means per channel quant
                             inplace=False, 
                             get_scale_zp=False, 
                             clam_quant_en=False, 
@@ -112,16 +112,17 @@ def pseudo_quantize_tensor( w,
                 # mean_bit_width = torch.floor(torch.log2((tensor.sum(dim=1) / 128).clamp(min=1)).float()) + 1
                 clamp_idx = (mean_bit_width <= 6) * (mean_bit_width > 4)
                 even = 0
-                ''' Profiling
-                with open('log/profiling.txt', 'a') as f:
-                    total_num = w_int.size(0)
-                    int4 = mean_bit_width <= 4
-                    int5_6 = (mean_bit_width > 4) * (mean_bit_width <= 6) 
-                    int7_8 = mean_bit_width > 6
-                    f.writelines(f'int4: {int4.sum() / total_num:>6.5f} ')
-                    f.writelines(f'int5_6: {int5_6.sum() / total_num:>6.5f} ')
-                    f.writelines(f'int7_8: {int7_8.sum() / total_num:>6.5f}\n')
-                '''
+                # ''' Profiling
+                if get_profiling_enable():
+                    with open('log/profiling.txt', 'a') as f:
+                        total_num = w_int.size(0)
+                        int4 = mean_bit_width <= 4
+                        int5_6 = (mean_bit_width > 4) * (mean_bit_width <= 6) 
+                        int7_8 = mean_bit_width > 6
+                        f.writelines(f'int4: {int4.sum() / total_num:>6.5f} ')
+                        f.writelines(f'int5_6: {int5_6.sum() / total_num:>6.5f} ')
+                        f.writelines(f'int7_8: {int7_8.sum() / total_num:>6.5f}\n')
+                # '''
             
             clamp_idx = clamp_idx.expand(-1, w_int.size(-1))
             # print(f'Total: {clamp_idx.numel()}, Clamp: {clamp_idx.sum()}')
