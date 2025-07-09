@@ -5,9 +5,9 @@ models = opt-125m opt-1.3b opt-2.7b opt-6.7b TinyLlama-1.1B-Chat-v1.0 llama-2-7b
 methods = --eval_quant --eval_clamp --eval_quant_qwt --eval_clamp_qwt
 
 llama:
-	TOKENIZERS_PARALLELISM=false python mycode/llm.py --model_name=TinyLlama-1.1B-Chat-v1.0 --n_samples=1 --eval_quant_qwt
+	TOKENIZERS_PARALLELISM=false python mycode/llm.py --model_name=llama-2-7b-hf --n_samples=40 --eval_quant_qwt --eval_clamp_qwt
 opt:
-	TOKENIZERS_PARALLELISM=false python mycode/llm.py --model_name=opt-125m --n_samples=1  --eval_clamp_qwt
+	TOKENIZERS_PARALLELISM=false python mycode/llm.py --model_name=opt-1.3b --n_samples=40  --eval_quant_qwt --eval_clamp_qwt
 
 vit:
 	TOKENIZERS_PARALLELISM=false python mycode/vit.py

@@ -4,7 +4,7 @@ LlamaForCausalLM(
   (model): LlamaModel(
     (embed_tokens): Embedding(32000, 4096)
     (layers): ModuleList(
-      (0-2): 3 x LlamaDecoderLayer(
+      (0-3): 4 x LlamaDecoderLayer(
         (self_attn): LlamaSdpaAttention(
           (q_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=False, clamp_quant=False)
           (k_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=False, clamp_quant=False)
@@ -21,7 +21,7 @@ LlamaForCausalLM(
         (input_layernorm): LlamaRMSNorm()
         (post_attention_layernorm): LlamaRMSNorm()
       )
-      (3-20): 18 x LlamaDecoderLayer(
+      (4-22): 19 x LlamaDecoderLayer(
         (self_attn): LlamaSdpaAttention(
           (q_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=True, clamp_quant=False)
           (k_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=True, clamp_quant=False)
@@ -38,7 +38,7 @@ LlamaForCausalLM(
         (input_layernorm): LlamaRMSNorm()
         (post_attention_layernorm): LlamaRMSNorm()
       )
-      (21): LlamaDecoderLayer(
+      (23): LlamaDecoderLayer(
         (self_attn): LlamaSdpaAttention(
           (q_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=False, clamp_quant=False)
           (k_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=False, clamp_quant=False)
@@ -55,41 +55,7 @@ LlamaForCausalLM(
         (input_layernorm): LlamaRMSNorm()
         (post_attention_layernorm): LlamaRMSNorm()
       )
-      (22-25): 4 x LlamaDecoderLayer(
-        (self_attn): LlamaSdpaAttention(
-          (q_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=True, clamp_quant=False)
-          (k_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=True, clamp_quant=False)
-          (v_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=True, clamp_quant=False)
-          (o_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=True, clamp_quant=False)
-          (rotary_emb): LlamaRotaryEmbedding()
-        )
-        (mlp): LlamaMLP(
-          (gate_proj): quantLinear(in_features=4096, out_features=11008, bias=False, quant_en=True, clamp_quant=False)
-          (up_proj): quantLinear(in_features=4096, out_features=11008, bias=False, quant_en=True, clamp_quant=False)
-          (down_proj): quantLinear(in_features=11008, out_features=4096, bias=False, quant_en=True, clamp_quant=False)
-          (act_fn): SiLU()
-        )
-        (input_layernorm): LlamaRMSNorm()
-        (post_attention_layernorm): LlamaRMSNorm()
-      )
-      (26): LlamaDecoderLayer(
-        (self_attn): LlamaSdpaAttention(
-          (q_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=False, clamp_quant=False)
-          (k_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=False, clamp_quant=False)
-          (v_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=False, clamp_quant=False)
-          (o_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=False, clamp_quant=False)
-          (rotary_emb): LlamaRotaryEmbedding()
-        )
-        (mlp): LlamaMLP(
-          (gate_proj): quantLinear(in_features=4096, out_features=11008, bias=False, quant_en=False, clamp_quant=False)
-          (up_proj): quantLinear(in_features=4096, out_features=11008, bias=False, quant_en=False, clamp_quant=False)
-          (down_proj): quantLinear(in_features=11008, out_features=4096, bias=False, quant_en=False, clamp_quant=False)
-          (act_fn): SiLU()
-        )
-        (input_layernorm): LlamaRMSNorm()
-        (post_attention_layernorm): LlamaRMSNorm()
-      )
-      (27-28): 2 x LlamaDecoderLayer(
+      (24-28): 5 x LlamaDecoderLayer(
         (self_attn): LlamaSdpaAttention(
           (q_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=True, clamp_quant=False)
           (k_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=True, clamp_quant=False)

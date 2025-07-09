@@ -54,3 +54,31 @@
 9 r2_score:      0.23248, mse:      0.00337
 10 r2_score:      0.21950, mse:      0.00534
 11 r2_score:      0.28864, mse:      0.01172
+
+==========train quant qwt============
+0 r2_score:      0.56518
+1 r2_score:      0.54810
+2 r2_score:      0.64756, mse:      0.00002
+3 r2_score:      0.31175, mse:      0.00005
+4 r2_score:      0.27378, mse:      0.00010
+5 r2_score:      0.23039, mse:      0.00017
+6 r2_score:      0.20346, mse:      0.00028
+7 r2_score:      0.17140, mse:      0.00045
+8 r2_score:      0.14711, mse:      0.00076
+9 r2_score:      0.12629, mse:      0.00130
+10 r2_score:      0.12302, mse:      0.00208
+11 r2_score:      0.16049, mse:      0.00331
+
+==========train clamp qwt============
+0 r2_score:      0.55747
+1 r2_score:      0.43239
+2 r2_score:      0.53742, mse:      0.00009
+3 r2_score:      0.39403, mse:      0.00012
+4 r2_score:      0.25928, mse:      0.00024
+5 r2_score:      0.23289, mse:      0.00039
+6 r2_score:      0.21305, mse:      0.00064
+7 r2_score:      0.18008, mse:      0.00098
+8 r2_score:      0.16087, mse:      0.00153
+9 r2_score:      0.13871, mse:      0.00244
+10 r2_score:      0.13555, mse:      0.00372
+11 r2_score:      0.17112, mse:      0.00592

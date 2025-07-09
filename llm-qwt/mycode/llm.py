@@ -201,33 +201,41 @@ def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, cla
     seq_len = 2048
     if model_name == 'opt-125m':
         hidden_dim = 768
-        qwt_begin_block = -1
+        qwt_begin_block = 1
+        train_samples = 256
     if model_name == 'opt-1.3b':
         hidden_dim = 2048
         qwt_begin_block = 5 # need modify
+        train_samples = 256
     if model_name == 'opt-2.7b':
         hidden_dim = 2560
         qwt_begin_block = 5 # need modify
+        train_samples = 128
     if model_name == 'opt-6.7b':
         hidden_dim = 4096
         qwt_begin_block = 5 # need modify
+        train_samples = 64
     if model_name == 'opt-13b':
         hidden_dim = 5120
         qwt_begin_block = 5 # need modify
+        train_samples = 64
 
     if model_name == 'TinyLlama-1.1B-Chat-v1.0':
         hidden_dim = 2048
-        qwt_begin_block = -1
+        qwt_begin_block = 1
+        train_samples = 256
     if model_name == 'llama-2-7b-hf':
         hidden_dim = 4096
-        qwt_begin_block = 2
+        qwt_begin_block = 3
+        train_samples = 64
     if model_name == 'Meta-Llama-3-8B':
         hidden_dim = 4096
-        qwt_begin_block = -1
-        qwt_begin_block = 2
+        qwt_begin_block = 3
+        train_samples = 64
     if model_name == 'Llama-2-13b-hf':
         hidden_dim = 5120
         qwt_begin_block = -1
+        train_samples = 64
     layer_inputs = torch.empty((train_samples, seq_len, hidden_dim), dtype=torch.bfloat16, device="cuda")
     # layer_inputs = []
     for i in tqdm(range(train_samples), desc="Before layers..."):
