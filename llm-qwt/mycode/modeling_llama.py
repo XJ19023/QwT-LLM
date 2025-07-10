@@ -158,6 +158,8 @@ def pseudo_quantize_tensor( w,
             w_int = w_int_clamp + w_int_left + even
             # with open('log/final.txt', 'a') as f:
             #     f.writelines(f'>>> {w_int[:10, :]}\n')
+            if q_group_size < 0:
+                w_int = w_int.reshape(org_w_shape)
             w = (w_int- zeros) * scales
         else:
             w = (torch.clamp(torch.round(w / scales) + zeros, min_int, max_int) - zeros) * scales

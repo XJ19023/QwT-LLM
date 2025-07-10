@@ -226,80 +226,59 @@ def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, cla
         forward_before_blocks = model.model.forward_before_blocks
         layers = model.model.layers
     seq_len = 2048
-    mx_accept_mse = 1
+
+    mx_accept_mse = 10000
+    qwt_begin_block = -1
     layer_quant_qwt = [10000]
+    except_layer = [10000]
+
+    '''
     if model_name == 'opt-125m':
         hidden_dim = 768
-        qwt_begin_block = 1
         train_samples = 256
     if model_name == 'opt-1.3b':
         hidden_dim = 2048
-        qwt_begin_block = 5 # need modify
         train_samples = 256
     if model_name == 'opt-2.7b':
         hidden_dim = 2560
-        qwt_begin_block = 5 # need modify
         train_samples = 128
     if model_name == 'opt-6.7b':
         hidden_dim = 4096
-        qwt_begin_block = 5 # need modify
         train_samples = 64
     if model_name == 'opt-13b':
         hidden_dim = 5120
-        qwt_begin_block = 5 # need modify
-        train_samples = 64
-
-    if model_name == 'TinyLlama-1.1B-Chat-v1.0':
-        hidden_dim = 2048
-        qwt_begin_block = 1
-        train_samples = 256
-    if model_name == 'llama-2-7b-hf':
-        hidden_dim = 4096
-        qwt_begin_block = 3
-        train_samples = 64
-    if model_name == 'Meta-Llama-3-8B':
-        hidden_dim = 4096
-        qwt_begin_block = 3
         train_samples = 64
     if model_name == 'Llama-2-13b-hf':
         hidden_dim = 5120
-        qwt_begin_block = -1
         train_samples = 64
-
     if model_name == 'Qwen3-1.7B':
         hidden_dim = 2048
-        qwt_begin_block = -1
         train_samples = 256
-        mx_accept_mse = 20000
-        except_layer = [14, 15, 16, 17]
     if model_name == 'Qwen3-8B':
         hidden_dim = 4096
-        qwt_begin_block = -1
-        mx_accept_mse = 20000
-        except_layer = [20000]
-        layer_quant_qwt = [33, 34, 35]
         train_samples = 64
+    if model_name == 'Qwen2.5-1.5B':
+        hidden_dim = 1536
+        train_samples = 256
+    '''
+
+    if model_name == 'TinyLlama-1.1B-Chat-v1.0':
+        hidden_dim = 2048
+        train_samples = 512
+    if model_name == 'llama-2-7b-hf':
+        hidden_dim = 4096
+        train_samples = 128
+    if model_name == 'Meta-Llama-3-8B':
+        hidden_dim = 4096
+        train_samples = 128
 
     if model_name == 'Qwen2.5-0.5B':
         hidden_dim = 896
-        qwt_begin_block = -1
-        mx_accept_mse = 20000
-        except_layer = [20000]
-        layer_quant_qwt = [3, 20, 22, 23]
-        train_samples = 256
-    if model_name == 'Qwen2.5-1.5B':
-        hidden_dim = 1536
-        qwt_begin_block = -1
-        mx_accept_mse = 20000
-        except_layer = [20000]
-        train_samples = 256
+        train_samples = 512
     if model_name == 'Qwen2.5-7B':
         hidden_dim = 3584
-        qwt_begin_block = -1
-        mx_accept_mse = 20000
-        except_layer = [20000]
-        layer_quant_qwt = [25, 26, 27]
-        train_samples = 64
+        train_samples = 128
+
     layer_inputs = torch.empty((train_samples, seq_len, hidden_dim), dtype=torch.bfloat16, device="cuda")
     # layer_inputs = []
     for i in tqdm(range(train_samples), desc="Before layers..."):

@@ -13,4 +13,5 @@
 - **2025-07-09**: Evaluate per group compress. 
 - **2025-07-09**: Implementing QwT + Qwen, result not good, under optimization. 
 - **2025-07-10**: Llama, Qwen2.5-0.5b, Qwen2.5-7b result is ok. 
+- **2025-07-10**: Llama, Qwen2.5-0.5b, Qwen2.5-7b base quant clamp logged. 
 ---
