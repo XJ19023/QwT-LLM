@@ -93,7 +93,7 @@ from functools import partial
 def pseudo_quantize_tensor( w, 
                             n_bit=8, 
                             zero_point=True, 
-                            q_group_size=128, 
+                            q_group_size=-128, 
                             inplace=False, 
                             get_scale_zp=False, 
                             clam_quant_en=False, 

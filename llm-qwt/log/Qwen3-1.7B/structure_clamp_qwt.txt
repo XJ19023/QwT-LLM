@@ -4,25 +4,7 @@ Qwen3ForCausalLM(
   (model): Qwen3Model(
     (embed_tokens): Embedding(151936, 2048)
     (layers): ModuleList(
-      (0-2): 3 x Qwen3DecoderLayer(
-        (self_attn): Qwen3Attention(
-          (q_proj): quantLinear(in_features=2048, out_features=2048, bias=False, quant_en=False, clamp_quant=False)
-          (k_proj): quantLinear(in_features=2048, out_features=1024, bias=False, quant_en=False, clamp_quant=False)
-          (v_proj): quantLinear(in_features=2048, out_features=1024, bias=False, quant_en=False, clamp_quant=False)
-          (o_proj): quantLinear(in_features=2048, out_features=2048, bias=False, quant_en=False, clamp_quant=False)
-          (q_norm): Qwen3RMSNorm((128,), eps=1e-06)
-          (k_norm): Qwen3RMSNorm((128,), eps=1e-06)
-        )
-        (mlp): Qwen3MLP(
-          (gate_proj): quantLinear(in_features=2048, out_features=6144, bias=False, quant_en=False, clamp_quant=False)
-          (up_proj): quantLinear(in_features=2048, out_features=6144, bias=False, quant_en=False, clamp_quant=False)
-          (down_proj): quantLinear(in_features=6144, out_features=2048, bias=False, quant_en=False, clamp_quant=False)
-          (act_fn): SiLU()
-        )
-        (input_layernorm): Qwen3RMSNorm((2048,), eps=1e-06)
-        (post_attention_layernorm): Qwen3RMSNorm((2048,), eps=1e-06)
-      )
-      (3-12): 10 x Qwen3DecoderLayer(
+      (0-13): 14 x Qwen3DecoderLayer(
         (self_attn): Qwen3Attention(
           (q_proj): quantLinear(in_features=2048, out_features=2048, bias=False, quant_en=True, clamp_quant=True)
           (k_proj): quantLinear(in_features=2048, out_features=1024, bias=False, quant_en=True, clamp_quant=True)
@@ -40,19 +22,37 @@ Qwen3ForCausalLM(
         (input_layernorm): Qwen3RMSNorm((2048,), eps=1e-06)
         (post_attention_layernorm): Qwen3RMSNorm((2048,), eps=1e-06)
       )
-      (13-27): 15 x Qwen3DecoderLayer(
+      (14-17): 4 x Qwen3DecoderLayer(
         (self_attn): Qwen3Attention(
-          (q_proj): quantLinear(in_features=2048, out_features=2048, bias=False, quant_en=False, clamp_quant=False)
-          (k_proj): quantLinear(in_features=2048, out_features=1024, bias=False, quant_en=False, clamp_quant=False)
-          (v_proj): quantLinear(in_features=2048, out_features=1024, bias=False, quant_en=False, clamp_quant=False)
-          (o_proj): quantLinear(in_features=2048, out_features=2048, bias=False, quant_en=False, clamp_quant=False)
+          (q_proj): quantLinear(in_features=2048, out_features=2048, bias=False, quant_en=True, clamp_quant=False)
+          (k_proj): quantLinear(in_features=2048, out_features=1024, bias=False, quant_en=True, clamp_quant=False)
+          (v_proj): quantLinear(in_features=2048, out_features=1024, bias=False, quant_en=True, clamp_quant=False)
+          (o_proj): quantLinear(in_features=2048, out_features=2048, bias=False, quant_en=True, clamp_quant=False)
           (q_norm): Qwen3RMSNorm((128,), eps=1e-06)
           (k_norm): Qwen3RMSNorm((128,), eps=1e-06)
         )
         (mlp): Qwen3MLP(
-          (gate_proj): quantLinear(in_features=2048, out_features=6144, bias=False, quant_en=False, clamp_quant=False)
-          (up_proj): quantLinear(in_features=2048, out_features=6144, bias=False, quant_en=False, clamp_quant=False)
-          (down_proj): quantLinear(in_features=6144, out_features=2048, bias=False, quant_en=False, clamp_quant=False)
+          (gate_proj): quantLinear(in_features=2048, out_features=6144, bias=False, quant_en=True, clamp_quant=False)
+          (up_proj): quantLinear(in_features=2048, out_features=6144, bias=False, quant_en=True, clamp_quant=False)
+          (down_proj): quantLinear(in_features=6144, out_features=2048, bias=False, quant_en=True, clamp_quant=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): Qwen3RMSNorm((2048,), eps=1e-06)
+        (post_attention_layernorm): Qwen3RMSNorm((2048,), eps=1e-06)
+      )
+      (18-27): 10 x Qwen3DecoderLayer(
+        (self_attn): Qwen3Attention(
+          (q_proj): quantLinear(in_features=2048, out_features=2048, bias=False, quant_en=True, clamp_quant=True)
+          (k_proj): quantLinear(in_features=2048, out_features=1024, bias=False, quant_en=True, clamp_quant=True)
+          (v_proj): quantLinear(in_features=2048, out_features=1024, bias=False, quant_en=True, clamp_quant=True)
+          (o_proj): quantLinear(in_features=2048, out_features=2048, bias=False, quant_en=True, clamp_quant=True)
+          (q_norm): Qwen3RMSNorm((128,), eps=1e-06)
+          (k_norm): Qwen3RMSNorm((128,), eps=1e-06)
+        )
+        (mlp): Qwen3MLP(
+          (gate_proj): quantLinear(in_features=2048, out_features=6144, bias=False, quant_en=True, clamp_quant=True)
+          (up_proj): quantLinear(in_features=2048, out_features=6144, bias=False, quant_en=True, clamp_quant=True)
+          (down_proj): quantLinear(in_features=6144, out_features=2048, bias=False, quant_en=True, clamp_quant=True)
           (act_fn): SiLU()
         )
         (input_layernorm): Qwen3RMSNorm((2048,), eps=1e-06)

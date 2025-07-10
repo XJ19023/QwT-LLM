@@ -4,7 +4,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 start_time = time.time()
 # ----------------------------------------------------------
-model_name = "/cephfs/shared/wangzw/LLM_models/Qwen3-8B"
+model_name = "/localssd/lbxj/Qwen2.5-0.5B"
 # load the tokenizer and the model
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(
@@ -13,7 +13,8 @@ model = AutoModelForCausalLM.from_pretrained(
     device_map="auto"
 )
 
-print(model)
+print(type(model))
+exit()
 
 # prepare the model input
 prompt = "Give me a short introduction to large language models."

@@ -169,7 +169,7 @@ if 'opt' in args.model_name.lower():
     sys.modules["transformers.models.opt.modeling_opt"] = custom_opt
     spec.loader.exec_module(custom_opt)
     from transformers.models.opt.modeling_opt import quantLinear
-if 'qwen' in args.model_name.lower():
+if 'qwen3' in args.model_name.lower():
     spec = importlib.util.spec_from_file_location(
         "transformers.models.qwen3.modeling_qwen3", 
         "./mycode/modeling_qwen3.py"
@@ -178,6 +178,15 @@ if 'qwen' in args.model_name.lower():
     sys.modules["transformers.models.qwen3.modeling_qwen3"] = custom_opt
     spec.loader.exec_module(custom_opt)
     from transformers.models.qwen3.modeling_qwen3 import quantLinear
+if 'qwen2' in args.model_name.lower():
+    spec = importlib.util.spec_from_file_location(
+        "transformers.models.qwen2.modeling_qwen2", 
+        "./mycode/modeling_qwen2.py"
+    )
+    custom_opt = importlib.util.module_from_spec(spec)
+    sys.modules["transformers.models.qwen2.modeling_qwen2"] = custom_opt
+    spec.loader.exec_module(custom_opt)
+    from transformers.models.qwen2.modeling_qwen2 import quantLinear
 def set_quant_state(model, quant=True, clamp=False):
     for name, module in model.named_modules():
         if isinstance(module, quantLinear):
@@ -218,7 +227,7 @@ def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, cla
         layers = model.model.layers
     seq_len = 2048
     mx_accept_mse = 1
-    except_layer = [10000]
+    layer_quant_qwt = [10000]
     if model_name == 'opt-125m':
         hidden_dim = 768
         qwt_begin_block = 1
@@ -259,14 +268,37 @@ def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, cla
 
     if model_name == 'Qwen3-1.7B':
         hidden_dim = 2048
-        qwt_begin_block = 2
+        qwt_begin_block = -1
         train_samples = 256
-        mx_accept_mse = 1
-        # except_layer = [0, 1, 2, 26, 27]
+        mx_accept_mse = 20000
+        except_layer = [14, 15, 16, 17]
     if model_name == 'Qwen3-8B':
         hidden_dim = 4096
-        qwt_begin_block = 4
-        mx_accept_mse = 1
+        qwt_begin_block = -1
+        mx_accept_mse = 20000
+        except_layer = [20000]
+        layer_quant_qwt = [33, 34, 35]
+        train_samples = 64
+
+    if model_name == 'Qwen2.5-0.5B':
+        hidden_dim = 896
+        qwt_begin_block = -1
+        mx_accept_mse = 20000
+        except_layer = [20000]
+        layer_quant_qwt = [3, 20, 22, 23]
+        train_samples = 256
+    if model_name == 'Qwen2.5-1.5B':
+        hidden_dim = 1536
+        qwt_begin_block = -1
+        mx_accept_mse = 20000
+        except_layer = [20000]
+        train_samples = 256
+    if model_name == 'Qwen2.5-7B':
+        hidden_dim = 3584
+        qwt_begin_block = -1
+        mx_accept_mse = 20000
+        except_layer = [20000]
+        layer_quant_qwt = [25, 26, 27]
         train_samples = 64
     layer_inputs = torch.empty((train_samples, seq_len, hidden_dim), dtype=torch.bfloat16, device="cuda")
     # layer_inputs = []
@@ -299,11 +331,11 @@ def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, cla
                 f.writelines(f'before_layers.{layer_idx}.input.dtype, {layer_input.dtype}\t {layer_input.shape}\n')
             '''
             set_quant_state(layer, quant=False, clamp=False)
+            append_activation(f'qwt_layers.{layer_idx}.input_full', layer_input_full)
             if 'opt' in args.model_name.lower():
                 layer_output = layer(layer_input_full, causal_attention_mask, use_cache=use_cache)
             if 'llama' in args.model_name.lower():
                 ''' For debug
-                append_activation(f'qwt_layers.{layer_idx}.input_full', layer_input_full)
                 with open('log/123_qwt.log', 'a') as f:
                     f.writelines(f'>>>> QwT {input_idx} <<<<\n')
                     f.writelines(f'input_ids type: {type(layer_input_full)} {layer_input_full.shape}\n')
@@ -322,6 +354,8 @@ def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, cla
                 layer_output = layer(layer_input_full, position_ids=position_ids, cache_position=cache_position, position_embeddings=position_embeddings)
             layer_outputs[input_idx] = layer_output[0][0].detach()
             set_quant_state(layer, quant=True, clamp=clamp)
+            if layer_idx in layer_quant_qwt:
+                set_quant_state(layer, quant=True, clamp=False)
             if 'opt' in args.model_name.lower():
                 layer_output_quant = layer(layer_input, causal_attention_mask, use_cache=use_cache)
             if 'llama' in args.model_name.lower():
@@ -329,10 +363,14 @@ def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, cla
             if 'qwen' in args.model_name.lower():
                 layer_output_quant = layer(layer_input, position_ids=position_ids, cache_position=cache_position, position_embeddings=position_embeddings)
             layer_outputs_quant[input_idx] = layer_output_quant[0][0].detach()
+        loss = nn.MSELoss()
+        quant_loss = loss(layer_outputs, layer_outputs_quant)
         W, b, r2_score = lienar_regression(layer_inputs, layer_outputs - layer_outputs_quant, block_id=layer_idx)
         if layer_idx > qwt_begin_block and r2_score > 0 and layer_idx not in except_layer:
             layer.set_qwt_para(W, b, r2_score)
             set_quant_state(layer, quant=True, clamp=clamp)
+            if layer_idx in layer_quant_qwt:
+                set_quant_state(layer, quant=True, clamp=False)
             for input_idx, layer_input in enumerate(layer_inputs):
                 layer_input.unsqueeze_(0)
                 if 'opt' in args.model_name.lower():
@@ -342,13 +380,13 @@ def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, cla
                 if 'qwen' in args.model_name.lower():
                     layer_output_wandb = layer(layer_input, position_ids=position_ids, cache_position=cache_position, position_embeddings=position_embeddings)
                 layer_outputs_quant[input_idx] = layer_output_wandb[0][0].detach()
-            loss = nn.MSELoss()
-            mseLoss = loss(layer_outputs_quant, layer_outputs)
+            qwt_loss = loss(layer_outputs_quant, layer_outputs)
             with open(f'log/{model_name}/r2_score.txt', 'a') as f:
-                f.writelines(f'{layer_idx} r2_score: {r2_score:>12.5f}, mse: {mseLoss:>12.5f}\n')
-            if mseLoss > mx_accept_mse:
+                f.writelines(f'{layer_idx} r2_score: {r2_score:>12.5f}, quant_loss: {quant_loss:>12.5f}, qwt_mse: {qwt_loss:>12.5f}\n')
+            # if qwt_loss > mx_accept_mse:
+            if qwt_loss > quant_loss:
                 layer.set_qwt_para(None, None, 0)
-                set_quant_state(layer, quant=False, clamp=False)
+                set_quant_state(layer, quant=True, clamp=False)
                 for input_idx, layer_input in enumerate(layer_inputs):
                     layer_input.unsqueeze_(0)
                     if 'opt' in args.model_name.lower():
@@ -363,7 +401,7 @@ def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, cla
             with open(f'log/{model_name}/r2_score.txt', 'a') as f:
                 f.writelines(f'{layer_idx} r2_score: {r2_score:>12.5f}\n')           
             layer.set_qwt_para(None, None, 0)
-            set_quant_state(layer, quant=False, clamp=False)
+            set_quant_state(layer, quant=True, clamp=False)
             for input_idx, layer_input in enumerate(layer_inputs):
                 layer_input.unsqueeze_(0)
                 if 'opt' in args.model_name.lower():
@@ -447,13 +485,12 @@ if args.eval_clamp_qwt:
             os.remove(dst)
         shutil.move('log/profiling.txt', dst)
 
-''' For debug
-# 用test.ipynb对比base版本和qwt版本的hidden_state的mse
+# ''' For debug
 saved_name = args.model_name.replace("-", "_").replace(".", "_")
-dir=f'/cephfs/shared/juxin/saved_tensor/qwt/{saved_name}_qwt'
+dir=f'/cephfs/shared/juxin/saved_tensor/qwt/{saved_name}_base'
 os.makedirs(dir, exist_ok=True)
 save_tensors(dir=dir)
-'''
+# '''
 # ----------------------------------------------------------
 end_time = time.time()
 duration = end_time - start_time
