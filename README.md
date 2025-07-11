@@ -2,7 +2,7 @@
   <img src="imgs/QwT_illustration.png" width="500px" />
 </div>
 
-- transformers = 4.43.0
+- transformers = 4.53.1
 
 ## 📌 Changelog
 
@@ -14,4 +14,5 @@
 - **2025-07-09**: Implementing QwT + Qwen, result not good, under optimization. 
 - **2025-07-10**: Llama, Qwen2.5-0.5b, Qwen2.5-7b result is ok. 
 - **2025-07-10**: Llama, Qwen2.5-0.5b, Qwen2.5-7b base quant clamp logged. 
+- **2025-07-11**: Llama, Qwen2.5-0.5b, Qwen2.5-7b clamp-qwt good. 
 ---

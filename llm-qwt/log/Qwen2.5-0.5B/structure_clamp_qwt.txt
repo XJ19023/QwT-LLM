@@ -1,0 +1,108 @@
+<class 'transformers.models.qwen2.modeling_qwen2.Qwen2ForCausalLM'>
+
+Qwen2ForCausalLM(
+  (model): Qwen2Model(
+    (embed_tokens): Embedding(151936, 896)
+    (layers): ModuleList(
+      (0-1): 2 x Qwen2DecoderLayer(
+        (self_attn): Qwen2Attention(
+          (q_proj): quantLinear(in_features=896, out_features=896, bias=True, quant_en=True, clamp_quant=True)
+          (k_proj): quantLinear(in_features=896, out_features=128, bias=True, quant_en=True, clamp_quant=True)
+          (v_proj): quantLinear(in_features=896, out_features=128, bias=True, quant_en=True, clamp_quant=True)
+          (o_proj): quantLinear(in_features=896, out_features=896, bias=False, quant_en=True, clamp_quant=True)
+        )
+        (mlp): Qwen2MLP(
+          (gate_proj): quantLinear(in_features=896, out_features=4864, bias=False, quant_en=True, clamp_quant=True)
+          (up_proj): quantLinear(in_features=896, out_features=4864, bias=False, quant_en=True, clamp_quant=True)
+          (down_proj): quantLinear(in_features=4864, out_features=896, bias=False, quant_en=True, clamp_quant=True)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): Qwen2RMSNorm((896,), eps=1e-06)
+        (post_attention_layernorm): Qwen2RMSNorm((896,), eps=1e-06)
+      )
+      (2): Qwen2DecoderLayer(
+        (self_attn): Qwen2Attention(
+          (q_proj): quantLinear(in_features=896, out_features=896, bias=True, quant_en=True, clamp_quant=False)
+          (k_proj): quantLinear(in_features=896, out_features=128, bias=True, quant_en=True, clamp_quant=False)
+          (v_proj): quantLinear(in_features=896, out_features=128, bias=True, quant_en=True, clamp_quant=False)
+          (o_proj): quantLinear(in_features=896, out_features=896, bias=False, quant_en=True, clamp_quant=False)
+        )
+        (mlp): Qwen2MLP(
+          (gate_proj): quantLinear(in_features=896, out_features=4864, bias=False, quant_en=True, clamp_quant=False)
+          (up_proj): quantLinear(in_features=896, out_features=4864, bias=False, quant_en=True, clamp_quant=False)
+          (down_proj): quantLinear(in_features=4864, out_features=896, bias=False, quant_en=True, clamp_quant=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): Qwen2RMSNorm((896,), eps=1e-06)
+        (post_attention_layernorm): Qwen2RMSNorm((896,), eps=1e-06)
+      )
+      (3-13): 11 x Qwen2DecoderLayer(
+        (self_attn): Qwen2Attention(
+          (q_proj): quantLinear(in_features=896, out_features=896, bias=True, quant_en=True, clamp_quant=True)
+          (k_proj): quantLinear(in_features=896, out_features=128, bias=True, quant_en=True, clamp_quant=True)
+          (v_proj): quantLinear(in_features=896, out_features=128, bias=True, quant_en=True, clamp_quant=True)
+          (o_proj): quantLinear(in_features=896, out_features=896, bias=False, quant_en=True, clamp_quant=True)
+        )
+        (mlp): Qwen2MLP(
+          (gate_proj): quantLinear(in_features=896, out_features=4864, bias=False, quant_en=True, clamp_quant=True)
+          (up_proj): quantLinear(in_features=896, out_features=4864, bias=False, quant_en=True, clamp_quant=True)
+          (down_proj): quantLinear(in_features=4864, out_features=896, bias=False, quant_en=True, clamp_quant=True)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): Qwen2RMSNorm((896,), eps=1e-06)
+        (post_attention_layernorm): Qwen2RMSNorm((896,), eps=1e-06)
+      )
+      (14): Qwen2DecoderLayer(
+        (self_attn): Qwen2Attention(
+          (q_proj): quantLinear(in_features=896, out_features=896, bias=True, quant_en=True, clamp_quant=False)
+          (k_proj): quantLinear(in_features=896, out_features=128, bias=True, quant_en=True, clamp_quant=False)
+          (v_proj): quantLinear(in_features=896, out_features=128, bias=True, quant_en=True, clamp_quant=False)
+          (o_proj): quantLinear(in_features=896, out_features=896, bias=False, quant_en=True, clamp_quant=False)
+        )
+        (mlp): Qwen2MLP(
+          (gate_proj): quantLinear(in_features=896, out_features=4864, bias=False, quant_en=True, clamp_quant=False)
+          (up_proj): quantLinear(in_features=896, out_features=4864, bias=False, quant_en=True, clamp_quant=False)
+          (down_proj): quantLinear(in_features=4864, out_features=896, bias=False, quant_en=True, clamp_quant=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): Qwen2RMSNorm((896,), eps=1e-06)
+        (post_attention_layernorm): Qwen2RMSNorm((896,), eps=1e-06)
+      )
+      (15-21): 7 x Qwen2DecoderLayer(
+        (self_attn): Qwen2Attention(
+          (q_proj): quantLinear(in_features=896, out_features=896, bias=True, quant_en=True, clamp_quant=True)
+          (k_proj): quantLinear(in_features=896, out_features=128, bias=True, quant_en=True, clamp_quant=True)
+          (v_proj): quantLinear(in_features=896, out_features=128, bias=True, quant_en=True, clamp_quant=True)
+          (o_proj): quantLinear(in_features=896, out_features=896, bias=False, quant_en=True, clamp_quant=True)
+        )
+        (mlp): Qwen2MLP(
+          (gate_proj): quantLinear(in_features=896, out_features=4864, bias=False, quant_en=True, clamp_quant=True)
+          (up_proj): quantLinear(in_features=896, out_features=4864, bias=False, quant_en=True, clamp_quant=True)
+          (down_proj): quantLinear(in_features=4864, out_features=896, bias=False, quant_en=True, clamp_quant=True)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): Qwen2RMSNorm((896,), eps=1e-06)
+        (post_attention_layernorm): Qwen2RMSNorm((896,), eps=1e-06)
+      )
+      (22-23): 2 x Qwen2DecoderLayer(
+        (self_attn): Qwen2Attention(
+          (q_proj): quantLinear(in_features=896, out_features=896, bias=True, quant_en=True, clamp_quant=False)
+          (k_proj): quantLinear(in_features=896, out_features=128, bias=True, quant_en=True, clamp_quant=False)
+          (v_proj): quantLinear(in_features=896, out_features=128, bias=True, quant_en=True, clamp_quant=False)
+          (o_proj): quantLinear(in_features=896, out_features=896, bias=False, quant_en=True, clamp_quant=False)
+        )
+        (mlp): Qwen2MLP(
+          (gate_proj): quantLinear(in_features=896, out_features=4864, bias=False, quant_en=True, clamp_quant=False)
+          (up_proj): quantLinear(in_features=896, out_features=4864, bias=False, quant_en=True, clamp_quant=False)
+          (down_proj): quantLinear(in_features=4864, out_features=896, bias=False, quant_en=True, clamp_quant=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): Qwen2RMSNorm((896,), eps=1e-06)
+        (post_attention_layernorm): Qwen2RMSNorm((896,), eps=1e-06)
+      )
+    )
+    (norm): Qwen2RMSNorm((896,), eps=1e-06)
+    (rotary_emb): Qwen2RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=896, out_features=151936, bias=False)
+)

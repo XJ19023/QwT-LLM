@@ -1,0 +1,24 @@
+
+==========train clamp qwt============ layer_quant_qwt=[16, 18, 20, 21]
+0 r2_score:        0.51525, quant_loss:      0.00002, qwt_mse:      0.00000
+1 r2_score:        0.35712, quant_loss:      0.00011, qwt_mse:      0.00004
+2 r2_score:        0.38005, quant_loss:      0.00096, qwt_mse:      0.00058
+3 r2_score:        0.39895, quant_loss:      0.00065, qwt_mse:      0.00039
+4 r2_score:        0.08542, quant_loss:      0.00052, qwt_mse:      0.00047
+5 r2_score:       -0.14811, quant_loss:      0.00062
+6 r2_score:        0.17296, quant_loss:      0.00077, qwt_mse:      0.00062
+7 r2_score:        0.13084, quant_loss:      0.00188, qwt_mse:      0.00160
+8 r2_score:        0.11307, quant_loss:      0.00197, qwt_mse:      0.00171
+9 r2_score:        0.08458, quant_loss:      0.00212, qwt_mse:      0.00191
+10 r2_score:        0.07872, quant_loss:      0.00235, qwt_mse:      0.00212
+11 r2_score:        0.07601, quant_loss:      0.00272, qwt_mse:      0.00244
+12 r2_score:        0.07643, quant_loss:      0.00311, qwt_mse:      0.00279
+13 r2_score:        0.07368, quant_loss:      0.00371, qwt_mse:      0.00334
+14 r2_score:        0.08079, quant_loss:      0.00443, qwt_mse:      0.00394
+15 r2_score:        0.08520, quant_loss:      0.00589, qwt_mse:      0.00519
+16 r2_score:        0.08337, quant_loss:      0.00729, qwt_mse:      0.00659
+17 r2_score:        0.06613, quant_loss:      0.01086, qwt_mse:      0.00964
+18 r2_score:        0.07013, quant_loss:      0.01599, qwt_mse:      0.01471
+19 r2_score:        0.06888, quant_loss:      0.02673, qwt_mse:      0.02380
+20 r2_score:        0.06687, quant_loss:      0.03784, qwt_mse:      0.03491
+21 r2_score:        0.09567, quant_loss:      0.06836, qwt_mse:      0.06079

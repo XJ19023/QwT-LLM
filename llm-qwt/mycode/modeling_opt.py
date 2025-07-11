@@ -1131,7 +1131,7 @@ class OPTDecoder(OPTPreTrainedModel):
                     use_cache,
                 )
             else:
-                append_activation(f'base_layers.{idx}.input', hidden_states)
+                # append_activation(f'base_layers.{idx}.input', hidden_states)
                 '''
                 if get_save_tensor_enable():
                     append_activation(f'layers.{idx}.input', hidden_states)
@@ -1155,7 +1155,7 @@ class OPTDecoder(OPTPreTrainedModel):
                 )
 
             hidden_states = layer_outputs[0]
-            append_activation(f'base_layers.{idx}.output', hidden_states)
+            # append_activation(f'base_layers.{idx}.output', hidden_states)
             if use_cache:
                 next_decoder_cache += (layer_outputs[2 if output_attentions else 1],)
 

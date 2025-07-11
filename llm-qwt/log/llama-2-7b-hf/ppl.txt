@@ -3,3 +3,14 @@ quant PPL: 6.201449871063232
 clamp PPL: 8.491145133972168
 >>> RUNNING TIME: 0h-5m-37s  07/10/2025, 19:35:42
 
+quant qwt PPL: 12.330229759216309
+clamp qwt PPL: 38.4589958190918
+>>> RUNNING TIME: 0h-15m-43s  07/10/2025, 20:23:04
+
+clamp qwt PPL: 18.618961334228516, train_samples=128, layer_quant_qwt=[25, 30, 31]
+>>> RUNNING TIME: 0h-8m-0s  07/11/2025, 00:13:45
+
+clamp qwt PPL: 6.438320159912109, train_samples=128, layer_quant_qwt=[10000]
+>>> RUNNING TIME: 0h-7m-53s  07/11/2025, 21:50:50
+
+
