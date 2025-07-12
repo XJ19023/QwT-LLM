@@ -180,7 +180,7 @@ LlamaForCausalLM(
         (input_layernorm): LlamaRMSNorm((4096,), eps=1e-05)
         (post_attention_layernorm): LlamaRMSNorm((4096,), eps=1e-05)
       )
-      (17-31): 15 x LlamaDecoderLayer(
+      (17-26): 10 x LlamaDecoderLayer(
         (self_attn): LlamaAttention(
           (q_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=True, clamp_quant=True)
           (k_proj): quantLinear(in_features=4096, out_features=1024, bias=False, quant_en=True, clamp_quant=True)
@@ -191,6 +191,54 @@ LlamaForCausalLM(
           (gate_proj): quantLinear(in_features=4096, out_features=14336, bias=False, quant_en=True, clamp_quant=True)
           (up_proj): quantLinear(in_features=4096, out_features=14336, bias=False, quant_en=True, clamp_quant=True)
           (down_proj): quantLinear(in_features=14336, out_features=4096, bias=False, quant_en=True, clamp_quant=True)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): LlamaRMSNorm((4096,), eps=1e-05)
+        (post_attention_layernorm): LlamaRMSNorm((4096,), eps=1e-05)
+      )
+      (27): LlamaDecoderLayer(
+        (self_attn): LlamaAttention(
+          (q_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=True, clamp_quant=False)
+          (k_proj): quantLinear(in_features=4096, out_features=1024, bias=False, quant_en=True, clamp_quant=False)
+          (v_proj): quantLinear(in_features=4096, out_features=1024, bias=False, quant_en=True, clamp_quant=False)
+          (o_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=True, clamp_quant=False)
+        )
+        (mlp): LlamaMLP(
+          (gate_proj): quantLinear(in_features=4096, out_features=14336, bias=False, quant_en=True, clamp_quant=False)
+          (up_proj): quantLinear(in_features=4096, out_features=14336, bias=False, quant_en=True, clamp_quant=False)
+          (down_proj): quantLinear(in_features=14336, out_features=4096, bias=False, quant_en=True, clamp_quant=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): LlamaRMSNorm((4096,), eps=1e-05)
+        (post_attention_layernorm): LlamaRMSNorm((4096,), eps=1e-05)
+      )
+      (28): LlamaDecoderLayer(
+        (self_attn): LlamaAttention(
+          (q_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=True, clamp_quant=True)
+          (k_proj): quantLinear(in_features=4096, out_features=1024, bias=False, quant_en=True, clamp_quant=True)
+          (v_proj): quantLinear(in_features=4096, out_features=1024, bias=False, quant_en=True, clamp_quant=True)
+          (o_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=True, clamp_quant=True)
+        )
+        (mlp): LlamaMLP(
+          (gate_proj): quantLinear(in_features=4096, out_features=14336, bias=False, quant_en=True, clamp_quant=True)
+          (up_proj): quantLinear(in_features=4096, out_features=14336, bias=False, quant_en=True, clamp_quant=True)
+          (down_proj): quantLinear(in_features=14336, out_features=4096, bias=False, quant_en=True, clamp_quant=True)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): LlamaRMSNorm((4096,), eps=1e-05)
+        (post_attention_layernorm): LlamaRMSNorm((4096,), eps=1e-05)
+      )
+      (29-31): 3 x LlamaDecoderLayer(
+        (self_attn): LlamaAttention(
+          (q_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=True, clamp_quant=False)
+          (k_proj): quantLinear(in_features=4096, out_features=1024, bias=False, quant_en=True, clamp_quant=False)
+          (v_proj): quantLinear(in_features=4096, out_features=1024, bias=False, quant_en=True, clamp_quant=False)
+          (o_proj): quantLinear(in_features=4096, out_features=4096, bias=False, quant_en=True, clamp_quant=False)
+        )
+        (mlp): LlamaMLP(
+          (gate_proj): quantLinear(in_features=4096, out_features=14336, bias=False, quant_en=True, clamp_quant=False)
+          (up_proj): quantLinear(in_features=4096, out_features=14336, bias=False, quant_en=True, clamp_quant=False)
+          (down_proj): quantLinear(in_features=14336, out_features=4096, bias=False, quant_en=True, clamp_quant=False)
           (act_fn): SiLU()
         )
         (input_layernorm): LlamaRMSNorm((4096,), eps=1e-05)

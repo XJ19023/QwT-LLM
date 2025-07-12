@@ -254,46 +254,47 @@ def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, cla
     if model_name == 'Qwen3-1.7B':
         hidden_dim = 2048
         train_samples = 256
-    if model_name == 'Qwen2.5-1.5B':
-        hidden_dim = 1536
-        train_samples = 256
+    if model_name == 'Qwen3-8B':
+        hidden_dim = 4096
+        train_samples = 128
+        except_layer = [0, 1, 2, 3, 4]
+        # layer_quant_qwt = [3, 4, 12, 15, 16, 21, 32]
     '''
 
     if model_name == 'TinyLlama-1.1B-Chat-v1.0':
         hidden_dim = 2048
         train_samples = 256
-        layer_quant_qwt = [17, 20, 21]
-        layer_quant_qwt = [16, 18, 20, 21]
+        except_layer = [0, 1, 2]
+        layer_quant_qwt = [20]
     if model_name == 'llama-2-7b-hf':
         hidden_dim = 4096
         train_samples = 128
-        except_layer = [0, 1, 2]
-        # layer_quant_qwt = [25, 31]
+        except_layer = [0, 1, 2, 3]
+        layer_quant_qwt = [31]
     if model_name == 'Meta-Llama-3-8B':
         hidden_dim = 4096
         train_samples = 128
         except_layer = [0, 1, 2]
-        # layer_quant_qwt = [25, 31]
+        layer_quant_qwt = [27, 29, 30, 31]
 
     if model_name == 'Qwen2.5-0.5B':
         hidden_dim = 896
         train_samples = 256
         layer_quant_qwt = [2, 22, 23]
         layer_quant_qwt = [2, 14, 22, 23]
+    if model_name == 'Qwen2.5-1.5B':
+        hidden_dim = 1536
+        train_samples = 256
+        except_layer = [0, 1, 2]
+        layer_quant_qwt = [20, 23, 25, 27]
     if model_name == 'Qwen2.5-7B':
         hidden_dim = 3584
         train_samples = 128
-        layer_quant_qwt = [3, 26, 27]
-        layer_quant_qwt = [23, 24, 26, 27]
+        layer_quant_qwt = [23, 24, 25, 26, 27]
 
-    if model_name == 'Qwen3-8B':
-        hidden_dim = 4096
-        train_samples = 128
-        # except_layer = [0, 1, 2]
-        layer_quant_qwt = [4, 16, 33]
         
     with open(f'log/{model_name}/r2_score.txt', 'a') as f:
-        f.writelines(f'layer_quant_qwt={layer_quant_qwt}\n')
+        f.writelines(f'lyr_qt_qwt={layer_quant_qwt}, ect_lyr={except_layer}\n')
     layer_inputs = torch.empty((train_samples, seq_len, hidden_dim), dtype=torch.bfloat16, device="cuda")
     # layer_inputs = []
     for i in tqdm(range(train_samples), desc="Before layers..."):
@@ -414,7 +415,7 @@ def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, cla
     del layer_inputs, layer_inputs_full, layer_outputs, layer_outputs_quant
     torch.cuda.empty_cache()
 
-    return train_samples, layer_quant_qwt
+    return train_samples, layer_quant_qwt, except_layer
     # exit()
 #=======================================================================
 
@@ -465,7 +466,7 @@ if args.eval_clamp_qwt:
     print(f'---eval {args.model_name} clamp qwt---')
     with open(f'log/{args.model_name}/r2_score.txt', 'a') as f:
         f.writelines(f'\n==========train clamp qwt============ ') 
-    train_samples, layer_quant_qwt = cal_wandb_to_full(model, train_data, tokenizer, "cuda", train_samples, clamp=True, model_name=args.model_name)
+    train_samples, layer_quant_qwt, except_layer = cal_wandb_to_full(model, train_data, tokenizer, "cuda", train_samples, clamp=True, model_name=args.model_name)
     with open(f'log/{args.model_name}/structure_clamp_qwt.txt', 'w') as f:
         f.writelines(f'{type(model)}\n\n{model}')
     if args.profiling:
@@ -473,7 +474,7 @@ if args.eval_clamp_qwt:
     ppl = evaluator.evaluate(model)
     print(f'clamp qwt PPL: {ppl}')
     with open(f'log/{args.model_name}/ppl.txt', 'a') as f:
-        f.writelines(f'clamp qwt PPL: {ppl}, train_samples={train_samples}, layer_quant_qwt={layer_quant_qwt}\n')
+        f.writelines(f'clp qwt PPL: {ppl}, trn_spls={train_samples}, lyr_qt_qwt={layer_quant_qwt}, ect_lyr={except_layer}\n')
 
     if args.profiling:
         dst = f'log/{args.model_name}/profiling.txt'

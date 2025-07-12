@@ -1,5 +1,5 @@
 
-==========train clamp qwt============ layer_quant_qwt=[2, 14, 22, 23]
+==========train clamp qwt============ lyr_qt_qwt=[2, 14, 22, 23], ect_lyr=[10000]
 0 r2_score:        0.43501, quant_loss:      0.00311, qwt_mse:      0.00137
 1 r2_score:        0.22806, quant_loss:      0.00443, qwt_mse:      0.00296
 2 r2_score:        0.32750, quant_loss:      0.01697, qwt_mse:      0.01129

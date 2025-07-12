@@ -1,12 +1,6 @@
 base PPL: 6.138255596160889
 quant PPL: 8.668805122375488
 clamp PPL: 15.989036560058594
->>> RUNNING TIME: 0h-5m-33s  07/10/2025, 19:43:07
-
-quant qwt PPL: 14.209485054016113
-clamp qwt PPL: 61.61811828613281
->>> RUNNING TIME: 0h-15m-34s  07/10/2025, 20:38:52
-
-clamp qwt PPL: 9.634401321411133, train_samples=128, layer_quant_qwt=[10000]
->>> RUNNING TIME: 0h-7m-55s  07/11/2025, 21:58:47
+clp qwt PPL: 8.77601146697998, trn_spls=128, lyr_qt_qwt=[27, 29, 30, 31], ect_lyr=[0, 1, 2]
+>>> RUNNING TIME: 0h-12m-9s  07/12/2025, 22:10:14
 

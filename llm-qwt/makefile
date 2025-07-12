@@ -1,11 +1,11 @@
 models = opt-125m TinyLlama-1.1B-Chat-v1.0 llama-2-7b-hf Meta-Llama-3-8B Llama-2-13b-hf opt-125m opt-1.3b opt-2.7b opt-6.7b opt-13b Qwen2.5-0.5B Qwen2.5-1.5B Qwen2.5-7B
 methods = --eval_base --eval_quant --eval_clamp --eval_quant_qwt --eval_clamp_qwt
 
-models = TinyLlama-1.1B-Chat-v1.0 llama-2-7b-hf Meta-Llama-3-8B Qwen2.5-0.5B Qwen2.5-7B
-methods = --eval_clamp_qwt
+models = TinyLlama-1.1B-Chat-v1.0 llama-2-7b-hf Meta-Llama-3-8B  Qwen2.5-0.5B Qwen2.5-1.5B Qwen2.5-7B
+methods = --eval_base --eval_quant --eval_clamp --eval_clamp_qwt
 
 qwen:
-	TOKENIZERS_PARALLELISM=false python mycode/llm.py --model_name=Qwen3-8B --eval_base --eval_quant --eval_clamp --eval_quant_qwt
+	TOKENIZERS_PARALLELISM=false python mycode/llm.py --model_name=Qwen2.5-1.5B  --eval_quant_qwt --eval_clamp_qwt
 llama:
 	TOKENIZERS_PARALLELISM=false python mycode/llm.py --model_name=Qwen3-8B --eval_clamp_qwt
 tmp:
@@ -16,7 +16,6 @@ opt:
 
 vit:
 	TOKENIZERS_PARALLELISM=false python mycode/vit.py
-
 
 data:
 	python mycode/data_process.py

@@ -1,0 +1,6 @@
+base PPL: 9.269610404968262
+quant PPL: 13.890059471130371
+clamp PPL: 24.516036987304688
+clp qwt PPL: 13.42320442199707, trn_spls=256, lyr_qt_qwt=[20, 23, 25, 27], ect_lyr=[0, 1, 2]
+>>> RUNNING TIME: 0h-6m-10s  07/12/2025, 22:26:50
+

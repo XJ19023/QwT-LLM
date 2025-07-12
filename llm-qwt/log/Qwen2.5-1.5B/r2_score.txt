@@ -1,0 +1,30 @@
+
+==========train clamp qwt============ lyr_qt_qwt=[20, 23, 25, 27], ect_lyr=[0, 1, 2]
+0 r2_score:        0.37710, quant_loss:      0.02844
+1 r2_score:        0.20310, quant_loss:      0.36914
+2 r2_score:        0.96341, quant_loss:      3.82812
+3 r2_score:        0.96367, quant_loss:      3.51562, qwt_mse:      0.12695
+4 r2_score:        0.07309, quant_loss:      0.22363, qwt_mse:      0.19336
+5 r2_score:       -3.17545, quant_loss:      0.30859
+6 r2_score:        0.34361, quant_loss:      0.33203, qwt_mse:      0.20605
+7 r2_score:        0.01307, quant_loss:      0.23730, qwt_mse:      0.22461
+8 r2_score:        0.12816, quant_loss:      0.25391, qwt_mse:      0.21484
+9 r2_score:        0.05515, quant_loss:      0.24902, qwt_mse:      0.22949
+10 r2_score:        0.07884, quant_loss:      0.23828, qwt_mse:      0.21387
+11 r2_score:       -0.24803, quant_loss:      0.23633
+12 r2_score:        0.07548, quant_loss:      0.24023, qwt_mse:      0.21484
+13 r2_score:       -0.23232, quant_loss:      0.24609
+14 r2_score:       -0.16697, quant_loss:      0.25586
+15 r2_score:        0.07675, quant_loss:      0.26367, qwt_mse:      0.23633
+16 r2_score:        0.10682, quant_loss:      0.27344, qwt_mse:      0.23730
+17 r2_score:        0.04013, quant_loss:      0.29492, qwt_mse:      0.27148
+18 r2_score:        0.09211, quant_loss:      0.34570, qwt_mse:      0.30078
+19 r2_score:       -8.64923, quant_loss:      0.45312
+20 r2_score:        0.08546, quant_loss:      0.49805, qwt_mse:      0.44922
+21 r2_score:        0.10848, quant_loss:      0.70703, qwt_mse:      0.59766
+22 r2_score:        0.07249, quant_loss:      1.00781, qwt_mse:      0.87891
+23 r2_score:        0.07490, quant_loss:      1.31250, qwt_mse:      1.19531
+24 r2_score:        0.05374, quant_loss:      2.09375, qwt_mse:      1.85938
+25 r2_score:        0.06117, quant_loss:      2.67188, qwt_mse:      2.45312
+26 r2_score:        0.52379, quant_loss:      7.62500, qwt_mse:      3.51562
+27 r2_score:        0.11028, quant_loss:      6.21875, qwt_mse:      5.12500
