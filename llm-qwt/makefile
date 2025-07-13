@@ -2,7 +2,8 @@ models = opt-125m TinyLlama-1.1B-Chat-v1.0 llama-2-7b-hf Meta-Llama-3-8B Llama-2
 methods = --eval_base --eval_quant --eval_clamp --eval_quant_qwt --eval_clamp_qwt
 
 models = TinyLlama-1.1B-Chat-v1.0 llama-2-7b-hf Meta-Llama-3-8B  Qwen2.5-0.5B Qwen2.5-1.5B Qwen2.5-7B
-methods = --eval_base --eval_quant --eval_clamp --eval_clamp_qwt
+models = TinyLlama-1.1B-Chat-v1.0 Qwen2.5-0.5B
+methods = --eval_clamp_qwt
 
 qwen:
 	TOKENIZERS_PARALLELISM=false python mycode/llm.py --model_name=Qwen2.5-1.5B  --eval_quant_qwt --eval_clamp_qwt

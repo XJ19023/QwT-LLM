@@ -18,6 +18,7 @@ from torch.utils.data import Dataset
 import time
 from datetime import datetime
 import sys
+from quant import quantLinear
 from globalVar import (get_save_tensor_enable,
                        save_tensors,
                        set_save_tensor_enable,
@@ -81,6 +82,7 @@ parser.add_argument(
     default="act_scales/llama-2-7b.pt",
 )
 parser.add_argument("--n_samples", type=int, default=None)
+# parser.add_argument("--n_samples", type=int, default=1)
 parser.add_argument("--device", type=str, default='cuda')
 parser.add_argument('--start_block', default=0, type=int)
 parser.add_argument("--local-rank", default=0, type=int)
@@ -159,7 +161,6 @@ if 'llama' in args.model_name.lower():
     custom_llama = importlib.util.module_from_spec(spec)
     sys.modules["transformers.models.llama.modeling_llama"] = custom_llama
     spec.loader.exec_module(custom_llama)
-    from transformers.models.llama.modeling_llama import quantLinear
 if 'opt' in args.model_name.lower():
     spec = importlib.util.spec_from_file_location(
         "transformers.models.opt.modeling_opt", 
@@ -168,7 +169,6 @@ if 'opt' in args.model_name.lower():
     custom_opt = importlib.util.module_from_spec(spec)
     sys.modules["transformers.models.opt.modeling_opt"] = custom_opt
     spec.loader.exec_module(custom_opt)
-    from transformers.models.opt.modeling_opt import quantLinear
 if 'qwen3' in args.model_name.lower():
     spec = importlib.util.spec_from_file_location(
         "transformers.models.qwen3.modeling_qwen3", 
@@ -177,7 +177,6 @@ if 'qwen3' in args.model_name.lower():
     custom_opt = importlib.util.module_from_spec(spec)
     sys.modules["transformers.models.qwen3.modeling_qwen3"] = custom_opt
     spec.loader.exec_module(custom_opt)
-    from transformers.models.qwen3.modeling_qwen3 import quantLinear
 if 'qwen2' in args.model_name.lower():
     spec = importlib.util.spec_from_file_location(
         "transformers.models.qwen2.modeling_qwen2", 
@@ -186,7 +185,6 @@ if 'qwen2' in args.model_name.lower():
     custom_opt = importlib.util.module_from_spec(spec)
     sys.modules["transformers.models.qwen2.modeling_qwen2"] = custom_opt
     spec.loader.exec_module(custom_opt)
-    from transformers.models.qwen2.modeling_qwen2 import quantLinear
 def set_quant_state(model, quant=True, clamp=False):
     for name, module in model.named_modules():
         if isinstance(module, quantLinear):
@@ -292,6 +290,7 @@ def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, cla
         train_samples = 128
         layer_quant_qwt = [23, 24, 25, 26, 27]
 
+    # train_samples = 16
         
     with open(f'log/{model_name}/r2_score.txt', 'a') as f:
         f.writelines(f'lyr_qt_qwt={layer_quant_qwt}, ect_lyr={except_layer}\n')
