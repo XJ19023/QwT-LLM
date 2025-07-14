@@ -43,9 +43,11 @@ def pseudo_quantize_tensor( w,
             (w.div_(scales).round_().add_(zeros)).clamp_(min_int, max_int).sub_(zeros)
         ).mul_(scales)
     else:
+        w_int = torch.clamp(torch.round(w / scales) + zeros, min_int, max_int) # quantized INT8
+        if get_save_tensor_enable() and 'act' in name:
+            append_activation(name, w_int)
         if clam_quant_en:
             if q_group_size < 0: # per channel
-                w_int = torch.clamp(torch.round(w / scales) + zeros, min_int, max_int) # quantized INT8
                 w_int = w_int.reshape(-1, 128)
                 max = w_int.amax(dim=-1, keepdim=True)
                 min = w_int.amin(dim=-1, keepdim=True)
@@ -54,7 +56,6 @@ def pseudo_quantize_tensor( w,
                 w_int -= even
                 clamp_idx = (present_range <= 63) * (present_range > 15)
             if q_group_size > 0:
-                w_int = torch.clamp(torch.round(w / scales) + zeros, min_int, max_int) # quantized INT8
                 mean_bit_width = (torch.floor(torch.log2(w_int.clamp(min=1))) + 1).sum(dim=1, keepdim=True) / 128
                 # mean_bit_width = torch.floor(torch.log2((tensor.sum(dim=1) / 128).clamp(min=1)).float()) + 1
                 clamp_idx = (mean_bit_width <= 6) * (mean_bit_width > 4)
@@ -70,22 +71,16 @@ def pseudo_quantize_tensor( w,
                         f.writelines(f'int7_8: {int7_8.sum() / total_num:>6.5f}\n')
             
             clamp_idx = clamp_idx.expand(-1, w_int.size(-1))
-            # print(f'Total: {clamp_idx.numel()}, Clamp: {clamp_idx.sum()}')
             w_int_clamp = w_int.masked_fill(~clamp_idx, 0)
             w_int_left = w_int.masked_fill(clamp_idx, 0)
-            # with open('log/before_clamp.txt', 'a') as f:
-            #     f.writelines(f'>>> {w_int_clamp[:10, :5]}\n')
             w_int_clamp = (w_int_clamp // 4)  # round to floor
-            # w_int_clamp = (w_int_clamp / 4).int()  # trancate
             w_int_clamp *= 4
             w_int = w_int_clamp + w_int_left + even
-            # with open('log/final.txt', 'a') as f:
-            #     f.writelines(f'>>> {w_int[:10, :]}\n')
             if q_group_size < 0:
                 w_int = w_int.reshape(org_w_shape)
             w = (w_int- zeros) * scales
         else:
-            w = (torch.clamp(torch.round(w / scales) + zeros, min_int, max_int) - zeros) * scales
+            w = (w_int - zeros) * scales
 
     assert torch.isnan(w).sum() == 0
 

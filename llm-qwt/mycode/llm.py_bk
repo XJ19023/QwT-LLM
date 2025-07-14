@@ -3,7 +3,6 @@ to speedup debug, set length=512, n_sample=1, use opt-125m
 开源代码量化后的结果向中间结果做线性回归，此版本修改为向全精度对齐
 '''
 import os
-import random
 import shutil
 import sys
 import torch
@@ -77,7 +76,6 @@ start_time = time.time()
 parser = argparse.ArgumentParser()
 parser.add_argument("--alpha", type=float, default=0.5)
 parser.add_argument("--model_name", type=str, default="opt-125m")
-parser.add_argument("--task", type=str, default="wikitext")
 parser.add_argument(
     "--act_scales_path",
     type=str,
@@ -99,26 +97,38 @@ parser.add_argument("--profiling", action="store_true")
 parser.add_argument("--save_tensor", action="store_true")
 args = parser.parse_args()
 
-@torch.no_grad()
-def evaluate(model, dataset, n_samples=None):
-    model.eval()
-    nlls = []
-    length = 2048
-    n_samples = n_samples if n_samples else dataset.size(1) // length
-    for i in tqdm(range(n_samples), desc="Evaluating..."):
-        batch = dataset[:, (i * length) : ((i + 1) * length)].to(model.device)
-        with torch.no_grad():
-            lm_logits = model(batch).logits
-        shift_logits = lm_logits[:, :-1, :].contiguous().float()
-        shift_labels = dataset[:, (i * length) : ((i + 1) * length)][:, 1:].to(model.device)
-        loss_fct = nn.CrossEntropyLoss()
-        loss = loss_fct(
-            shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1)
-        )
-        neg_log_likelihood = loss.float() * length
-        nlls.append(neg_log_likelihood)
+class Evaluator:
+    def __init__(self, dataset, tokenizer, device, n_samples=40):
+        self.dataset = dataset
+        self.tokenizer = tokenizer
+        self.device = device
 
-    return torch.exp(torch.stack(nlls).sum() / (n_samples * length))
+        self.dataset = tokenizer(
+            "\n\n".join(dataset["text"]), return_tensors="pt"
+        ).input_ids.to(device)
+
+        self.n_samples = n_samples
+
+    @torch.no_grad()
+    def evaluate(self, model):
+        model.eval()
+        nlls = []
+        length = 2048
+        n_samples = self.n_samples if self.n_samples else self.dataset.size(1) // length
+        for i in tqdm(range(n_samples), desc="Evaluating..."):
+            batch = self.dataset[:, (i * length) : ((i + 1) * length)].to(model.device)
+            with torch.no_grad():
+                lm_logits = model(batch).logits
+            shift_logits = lm_logits[:, :-1, :].contiguous().float()
+            shift_labels = self.dataset[:, (i * length) : ((i + 1) * length)][:, 1:]
+            loss_fct = nn.CrossEntropyLoss()
+            loss = loss_fct(
+                shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1)
+            )
+            neg_log_likelihood = loss.float() * length
+            nlls.append(neg_log_likelihood)
+
+        return torch.exp(torch.stack(nlls).sum() / (n_samples * length))
 
 args.world_size = 1
 args.rank = 0  # global rank
@@ -132,59 +142,9 @@ train_samples = 64 # 64
 
 
 tokenizer = AutoTokenizer.from_pretrained(model_path)
-# test_data = load_dataset("wikitext", "wikitext-2-raw-v1", split="test")
-# train_data = load_dataset("wikitext", "wikitext-2-raw-v1", split="train")
-# evaluator = Evaluator(test_data, tokenizer, "cuda", n_samples=n_samples)
-
-def get_wikitext2(tokenizer, eval=True):
-    if eval:
-        testdata = load_dataset("wikitext", "wikitext-2-raw-v1", split="test")
-    else:
-        testdata = load_dataset("wikitext", "wikitext-2-raw-v1", split="train")
-    testenc = tokenizer("\n\n".join(testdata["text"]), return_tensors="pt").input_ids
-    return testenc
-
-def get_c4(seqlen, tokenizer, eval=False):
-    if eval:
-        valdata = load_dataset(
-            "allenai/c4",
-            "default",
-            data_files={"validation": "en/c4-validation.00000-of-00008.json.gz"},
-            split="validation",
-            revision="607bd4c8450a42878aa9ddc051a65a055450ef87",
-        )
-    else:
-        valdata = load_dataset(
-            "allenai/c4",
-            "default",
-            data_files={"train": "en/c4-train.00000-of-01024.json.gz"},
-            split="train",
-            revision="607bd4c8450a42878aa9ddc051a65a055450ef87",
-        )
-    random.seed(0)
-    valenc = []
-    for _ in range(256):
-        while True:
-            i = random.randint(0, len(valdata) - 1)
-            tmp = tokenizer(valdata[i]["text"], return_tensors="pt")
-            if tmp.input_ids.shape[1] >= seqlen:
-                break
-        if tmp.input_ids.shape[1] == seqlen:
-            # rare case, discovered with Yi tokenizer
-            valenc.append(tmp.input_ids)
-        else:
-            i = random.randint(0, tmp.input_ids.shape[1] - seqlen - 1)
-            j = i + seqlen
-            valenc.append(tmp.input_ids[:, i:j])
-    valenc = torch.hstack(valenc)
-    return valenc    
-
-
-if args.task == 'wikitext':
-    test_data = get_wikitext2(tokenizer, True)
-    train_data = get_wikitext2(tokenizer, False)
-if args.task == 'c4':
-    test_data = get_c4(2048, tokenizer, True)
+test_data = load_dataset("wikitext", "wikitext-2-raw-v1", split="test")
+train_data = load_dataset("wikitext", "wikitext-2-raw-v1", split="train")
+evaluator = Evaluator(test_data, tokenizer, "cuda", n_samples=n_samples)
 
 os.makedirs(f'log/{args.model_name}', exist_ok=True)
 with open('log/Running.log', 'a') as f:
@@ -261,6 +221,9 @@ for name, module in model.named_modules():
 # I think this one should be beter, but the experiments are not
 @torch.no_grad()
 def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, clamp=None, model_name=None):
+    dataset = tokenizer(
+            "\n\n".join(dataset["text"]), return_tensors="pt"
+        ).input_ids
     train_samples = train_samples if train_samples else dataset.size(1) // 2048
     model.eval()
 
@@ -472,7 +435,7 @@ if args.eval_base:
     print(f'---eval {args.model_name} base---')
     if args.save_tensor:
         set_save_tensor_enable()
-        ppl = evaluate(model, test_data, args.n_samples)
+        ppl = evaluator.evaluate(model)
         print(f'base {args.model_name} PPL: {ppl}')
         saved_name = args.model_name.replace("-", "_").replace(".", "_")
         dir=f'/cephfs/shared/juxin/saved_tensor/qwt/{saved_name}_base'
@@ -481,7 +444,7 @@ if args.eval_base:
     else:
         with open(f'log/{args.model_name}/structure_base.txt', 'w') as f:
             f.writelines(f'{type(model)}\n\n{model}')
-        ppl = evaluate(model, test_data, args.n_samples)
+        ppl = evaluator.evaluate(model)
         print(f'base {args.model_name} PPL: {ppl}')
         with open(f'log/{args.model_name}/ppl.txt', 'a') as f:
             f.writelines(f'base PPL: {ppl}\n')
@@ -490,7 +453,7 @@ if args.eval_quant:
     set_quant_state(model, quant=True, clamp=False)
     if args.save_tensor:
         set_save_tensor_enable()
-        ppl = evaluate(model, test_data, args.n_samples)
+        ppl = evaluator.evaluate(model)
         print(f'quant {args.model_name} PPL: {ppl}')
         saved_name = args.model_name.replace("-", "_").replace(".", "_")
         dir=f'/cephfs/shared/juxin/saved_tensor/qwt/{saved_name}_quant'
@@ -499,7 +462,7 @@ if args.eval_quant:
     else:
         with open(f'log/{args.model_name}/structure_quant.txt', 'w') as f:
             f.writelines(f'{type(model)}\n\n{model}')
-        ppl = evaluate(model, test_data, args.n_samples)
+        ppl = evaluator.evaluate(model)
         print(f'quant {args.model_name} PPL: {ppl}')
         with open(f'log/{args.model_name}/ppl.txt', 'a') as f:
             f.writelines(f'quant PPL: {ppl}\n')
@@ -508,7 +471,7 @@ if args.eval_clamp:
     set_quant_state(model, quant=True, clamp=True)
     with open(f'log/{args.model_name}/structure_clamp.txt', 'w') as f:
         f.writelines(f'\n{type(model)}\n\n{model}')
-    ppl = evaluate(model, test_data, args.n_samples)
+    ppl = evaluator.evaluate(model)
     print(f'clamp PPL: {ppl}')
     with open(f'log/{args.model_name}/ppl.txt', 'a') as f:
         f.writelines(f'clamp PPL: {ppl}\n')
@@ -522,7 +485,7 @@ if args.eval_quant_qwt:
     with open(f'log/{args.model_name}/structure_quant_qwt.txt', 'w') as f:
         f.writelines(f'{type(model)}\n\n{model}')   
     # set_quant_state(model, quant=True, clamp=False) # 需要手动修改clamp
-    ppl = evaluate(model, test_data, args.n_samples)
+    ppl = evaluator.evaluate(model)
     print(f'quant qwt PPL: {ppl}')
     with open(f'log/{args.model_name}/ppl.txt', 'a') as f:
         f.writelines(f'quant qwt PPL: {ppl}\n')
@@ -531,7 +494,7 @@ if args.eval_clamp_qwt:
     if args.save_tensor:
         _, _, _ = cal_wandb_to_full(model, train_data, tokenizer, "cuda", train_samples, clamp=True, model_name=args.model_name)
         set_save_tensor_enable()
-        ppl = evaluate(model, test_data, args.n_samples)
+        ppl = evaluator.evaluate(model)
         print(f'quant {args.model_name} PPL: {ppl}')
         saved_name = args.model_name.replace("-", "_").replace(".", "_")
         dir=f'/cephfs/shared/juxin/saved_tensor/qwt/{saved_name}_qwt'
@@ -545,7 +508,7 @@ if args.eval_clamp_qwt:
             f.writelines(f'{type(model)}\n\n{model}')
         if args.profiling:
             set_profiling_enable()
-        ppl = evaluate(model, test_data, args.n_samples)
+        ppl = evaluator.evaluate(model)
         print(f'clamp qwt PPL: {ppl}')
         with open(f'log/{args.model_name}/ppl.txt', 'a') as f:
             f.writelines(f'clp qwt PPL: {ppl}, trn_spls={train_samples}, lyr_qt_qwt={layer_quant_qwt}, ect_lyr={except_layer}\n')
