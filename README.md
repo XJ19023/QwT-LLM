@@ -17,6 +17,7 @@
 - **2025-07-11**: Llama, Qwen2.5-0.5b, Qwen2.5-7b clamp-qwt good. 
 - **2025-07-13**: Llama, Qwen2.5 clamp-qwt logged. 
 - **2025-07-13**: Pack quantLinear. 
+- **2025-07-14**: Use `_set_module` to quant. 
 ---
 
 |             | Llama-1.1b | Llama-2-7b | Llama-3-8b | Qwen2.5-0.5b | Qwen2.5-0.5b | Qwen2.5-7b |

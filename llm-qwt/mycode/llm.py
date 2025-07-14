@@ -203,6 +203,18 @@ model = AutoModelForCausalLM.from_pretrained(
     config=config
 )
 
+def _set_module(model, submodule_key, module):
+    tokens = submodule_key.split('.')
+    sub_tokens = tokens[:-1]
+    cur_mod = model
+    for s in sub_tokens:
+        cur_mod = getattr(cur_mod, s)
+    setattr(cur_mod, tokens[-1], module)
+
+for name, module in model.named_modules():
+    if isinstance(module, torch.nn.Linear) and name != 'lm_head':
+        new_layer = quantLinear.set_param(module, name=name)
+        _set_module(model, name, new_layer)
 
 #=======================================================================
 # I think this one should be beter, but the experiments are not
@@ -424,7 +436,6 @@ if args.eval_base:
     #     f.writelines(f'========base==============\n')
     with open(f'log/{args.model_name}/structure_base.txt', 'w') as f:
         f.writelines(f'{type(model)}\n\n{model}')
-    # set_quant_state(model, quant=False, clamp=False)
     ppl = evaluator.evaluate(model)
     print(f'base PPL: {ppl}')
     with open(f'log/{args.model_name}/ppl.txt', 'a') as f:

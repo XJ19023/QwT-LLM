@@ -96,41 +96,38 @@ def pseudo_quantize_tensor( w,
     else:
         return w
 
-class quantLinear(nn.Module):
-    __constants__ = ['in_features', 'out_features']
-    in_features: int
-    out_features: int
-    weight: Tensor
-
-    def __init__(self, in_features: int, out_features: int, bias: bool = True,
-                 device=None, dtype=None, name=None) -> None:
-        factory_kwargs = {'device': device, 'dtype': dtype}
-        super().__init__()
+class quantLinear(torch.nn.Linear):
+    def __init__(self,
+                 in_features: int,
+                 out_features: int,
+                 bias: bool = True,
+                 name=None
+                 ) -> None:
         self.in_features = in_features
         self.out_features = out_features
-        self.weight = Parameter(torch.empty((out_features, in_features), **factory_kwargs))
-        if bias:
-            self.bias = Parameter(torch.empty(out_features, **factory_kwargs))
-        else:
-            self.register_parameter('bias', None)
-
         self.name = name
+
         self.quant_en = False
         self.clamp_en = False
         self.act_quant = partial(pseudo_quantize_tensor, n_bit=8, name=f'{name}.act')
         self.wgt_quant = partial(pseudo_quantize_tensor, n_bit=4, name=f'{name}.wgt')
 
-        self.reset_parameters()
+        super().__init__(in_features, out_features, bias)
 
-    def reset_parameters(self) -> None:
-        # Setting a=sqrt(5) in kaiming_uniform is the same as initializing with
-        # uniform(-1/sqrt(in_features), 1/sqrt(in_features)). For details, see
-        # https://github.com/pytorch/pytorch/issues/57109
-        init.kaiming_uniform_(self.weight, a=math.sqrt(5))
-        if self.bias is not None:
-            fan_in, _ = init._calculate_fan_in_and_fan_out(self.weight)
-            bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
-            init.uniform_(self.bias, -bound, bound)
+    @staticmethod
+    def set_param(module, name,
+    ):
+        assert isinstance(module, torch.nn.Linear)
+        new_module = quantLinear(
+            module.in_features,
+            module.out_features,
+            module.bias is not None,
+            name=name,
+        )
+        new_module.weight = torch.nn.Parameter(module.weight.data.clone())
+        if module.bias is not None:
+            new_module.bias = module.bias
+        return new_module
 
     def extra_repr(self) -> str:
         return f'in_features={self.in_features}, out_features={self.out_features}, bias={self.bias is not None}, quant_en={self.quant_en}, clamp_quant={self.clamp_en}'
