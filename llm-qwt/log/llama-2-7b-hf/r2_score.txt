@@ -32,3 +32,38 @@
 29 r2_score:        0.04744, quant_loss:      0.29297, qwt_mse:      0.26953
 30 r2_score:        0.60384, quant_loss:      0.88672, qwt_mse:      0.34180
 31 r2_score:        0.13859, quant_loss:      0.63281, qwt_mse:      0.52734
+
+
+==========train clamp qwt============ lyr_qt_qwt=[31], ect_lyr=[0, 1, 2, 3]
+0 r2_score:        0.51971, quant_loss:      0.00007
+1 r2_score:        0.73752, quant_loss:      0.02271
+2 r2_score:        0.73666, quant_loss:      0.00467
+3 r2_score:        0.67255, quant_loss:      0.00534
+4 r2_score:        0.61540, quant_loss:      0.00644, qwt_mse:      0.00230
+5 r2_score:        0.02929, quant_loss:      0.00363, qwt_mse:      0.00331
+6 r2_score:       -0.02733, quant_loss:      0.00500
+7 r2_score:       -0.16553, quant_loss:      0.00626
+8 r2_score:        0.14174, quant_loss:      0.00781, qwt_mse:      0.00629
+9 r2_score:        0.14316, quant_loss:      0.00922, qwt_mse:      0.00745
+10 r2_score:       -0.01347, quant_loss:      0.01074
+11 r2_score:       -1.15090, quant_loss:      0.01251
+12 r2_score:       -2.64248, quant_loss:      0.01465
+13 r2_score:       -1.62602, quant_loss:      0.01733
+14 r2_score:       -0.48903, quant_loss:      0.02051
+15 r2_score:       -0.24927, quant_loss:      0.02490
+16 r2_score:        0.04288, quant_loss:      0.03223, qwt_mse:      0.02795
+17 r2_score:        0.19125, quant_loss:      0.03857, qwt_mse:      0.02905
+18 r2_score:        0.06426, quant_loss:      0.04297, qwt_mse:      0.03711
+19 r2_score:        0.06372, quant_loss:      0.05273, qwt_mse:      0.04614
+20 r2_score:        0.05683, quant_loss:      0.06641, qwt_mse:      0.05908
+21 r2_score:        0.04427, quant_loss:      0.07910, qwt_mse:      0.07227
+22 r2_score:        0.04499, quant_loss:      0.09717, qwt_mse:      0.08936
+23 r2_score:        0.03981, quant_loss:      0.11572, qwt_mse:      0.10645
+24 r2_score:        0.03522, quant_loss:      0.13672, qwt_mse:      0.12695
+25 r2_score:        0.03174, quant_loss:      0.15820, qwt_mse:      0.14844
+26 r2_score:        0.03151, quant_loss:      0.18848, qwt_mse:      0.17676
+27 r2_score:        0.02875, quant_loss:      0.21973, qwt_mse:      0.20801
+28 r2_score:        0.03241, quant_loss:      0.26367, qwt_mse:      0.24707
+29 r2_score:        0.04124, quant_loss:      0.32031, qwt_mse:      0.29688
+30 r2_score:        0.58467, quant_loss:      0.93359, qwt_mse:      0.37695
+31 r2_score:        0.14809, quant_loss:      0.73828, qwt_mse:      0.61328

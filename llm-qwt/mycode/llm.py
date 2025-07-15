@@ -147,20 +147,17 @@ def get_wikitext2(tokenizer, eval=True):
 def get_c4(seqlen, tokenizer, eval=False):
     if eval:
         valdata = load_dataset(
-            "allenai/c4",
-            "default",
-            data_files={"validation": "en/c4-validation.00000-of-00008.json.gz"},
+            "json",
+            data_files={"validation": "/cephfs/shared/juxin/dataset/c4/en/c4-validation.00000-of-00008.json.gz"},
             split="validation",
-            revision="607bd4c8450a42878aa9ddc051a65a055450ef87",
         )
     else:
         valdata = load_dataset(
-            "allenai/c4",
-            "default",
-            data_files={"train": "en/c4-train.00000-of-01024.json.gz"},
+            "json",
+            data_files={"train": "/cephfs/shared/juxin/dataset/c4/en/c4-train.00000-of-01024.json.gz"},
             split="train",
-            revision="607bd4c8450a42878aa9ddc051a65a055450ef87",
         )
+
     random.seed(0)
     valenc = []
     for _ in range(256):
@@ -185,6 +182,7 @@ if args.task == 'wikitext':
     train_data = get_wikitext2(tokenizer, False)
 if args.task == 'c4':
     test_data = get_c4(2048, tokenizer, True)
+    train_data = get_c4(2048, tokenizer, True)
 
 os.makedirs(f'log/{args.model_name}', exist_ok=True)
 with open('log/Running.log', 'a') as f:
@@ -260,7 +258,7 @@ for name, module in model.named_modules():
 #=======================================================================
 # I think this one should be beter, but the experiments are not
 @torch.no_grad()
-def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, clamp=None, model_name=None):
+def cal_wandb_to_full(model, task, dataset, tokenizer, device, train_samples=None, clamp=None, model_name=None):
     train_samples = train_samples if train_samples else dataset.size(1) // 2048
     model.eval()
 
@@ -309,36 +307,68 @@ def cal_wandb_to_full(model, dataset, tokenizer, device, train_samples=None, cla
         # layer_quant_qwt = [3, 4, 12, 15, 16, 21, 32]
     '''
 
-    if model_name == 'TinyLlama-1.1B-Chat-v1.0':
-        hidden_dim = 2048
-        train_samples = 256
-        except_layer = [0, 1, 2]
-        layer_quant_qwt = [20]
-    if model_name == 'llama-2-7b-hf':
-        hidden_dim = 4096
-        train_samples = 128
-        except_layer = [0, 1, 2, 3]
-        layer_quant_qwt = [31]
-    if model_name == 'Meta-Llama-3-8B':
-        hidden_dim = 4096
-        train_samples = 128
-        except_layer = [0, 1, 2]
-        layer_quant_qwt = [27, 29, 30, 31]
+    if task == 'wikitext':
+        if model_name == 'TinyLlama-1.1B-Chat-v1.0':
+            hidden_dim = 2048
+            train_samples = 256
+            except_layer = [0, 1, 2]
+            layer_quant_qwt = [20]
+        if model_name == 'llama-2-7b-hf':
+            hidden_dim = 4096
+            train_samples = 128
+            except_layer = [0, 1, 2, 3]
+            layer_quant_qwt = [31]
+        if model_name == 'Meta-Llama-3-8B':
+            hidden_dim = 4096
+            train_samples = 128
+            except_layer = [0, 1, 2]
+            layer_quant_qwt = [27, 29, 30, 31]
 
-    if model_name == 'Qwen2.5-0.5B':
-        hidden_dim = 896
-        train_samples = 256
-        layer_quant_qwt = [2, 22, 23]
-        layer_quant_qwt = [2, 14, 22, 23]
-    if model_name == 'Qwen2.5-1.5B':
-        hidden_dim = 1536
-        train_samples = 256
-        except_layer = [0, 1, 2]
-        layer_quant_qwt = [20, 23, 25, 27]
-    if model_name == 'Qwen2.5-7B':
-        hidden_dim = 3584
-        train_samples = 128
-        layer_quant_qwt = [23, 24, 25, 26, 27]
+        if model_name == 'Qwen2.5-0.5B':
+            hidden_dim = 896
+            train_samples = 256
+            layer_quant_qwt = [2, 22, 23]
+            layer_quant_qwt = [2, 14, 22, 23]
+        if model_name == 'Qwen2.5-1.5B':
+            hidden_dim = 1536
+            train_samples = 256
+            except_layer = [0, 1, 2]
+            layer_quant_qwt = [20, 23, 25, 27]
+        if model_name == 'Qwen2.5-7B':
+            hidden_dim = 3584
+            train_samples = 128
+            layer_quant_qwt = [23, 24, 25, 26, 27]
+    if task == 'c4':
+        if model_name == 'TinyLlama-1.1B-Chat-v1.0':
+            hidden_dim = 2048
+            train_samples = 256
+            except_layer = [0, 1, 2]
+            layer_quant_qwt = [20, 21]
+        if model_name == 'llama-2-7b-hf':
+            hidden_dim = 4096
+            train_samples = 128
+            except_layer = [0, 1, 2, 3]
+            layer_quant_qwt = [31]
+        if model_name == 'Meta-Llama-3-8B':
+            hidden_dim = 4096
+            train_samples = 128
+            except_layer = [0, 1, 2]
+            layer_quant_qwt = [23, 28, 29, 30, 31]
+
+        if model_name == 'Qwen2.5-0.5B':
+            hidden_dim = 896
+            train_samples = 256
+            layer_quant_qwt = [2, 22, 23]
+            layer_quant_qwt = [2, 14, 22, 23]
+        if model_name == 'Qwen2.5-1.5B':
+            hidden_dim = 1536
+            train_samples = 256
+            except_layer = [0, 1, 2]
+            layer_quant_qwt = [20, 23, 24, 25, 27]
+        if model_name == 'Qwen2.5-7B':
+            hidden_dim = 3584
+            train_samples = 128
+            layer_quant_qwt = [23, 24, 25, 26, 27]
 
     # train_samples = 16
         
@@ -529,7 +559,7 @@ if args.eval_quant_qwt:
 if args.eval_clamp_qwt:
     print(f'---eval {args.model_name} clamp qwt---')
     if args.save_tensor:
-        _, _, _ = cal_wandb_to_full(model, train_data, tokenizer, "cuda", train_samples, clamp=True, model_name=args.model_name)
+        _, _, _ = cal_wandb_to_full(model, args.task, train_data, tokenizer, "cuda", train_samples, clamp=True, model_name=args.model_name)
         set_save_tensor_enable()
         ppl = evaluate(model, test_data, args.n_samples)
         print(f'quant {args.model_name} PPL: {ppl}')
@@ -540,8 +570,8 @@ if args.eval_clamp_qwt:
     else:
         with open(f'log/{args.model_name}/r2_score.txt', 'a') as f:
             f.writelines(f'\n==========train clamp qwt============ ') 
-        train_samples, layer_quant_qwt, except_layer = cal_wandb_to_full(model, train_data, tokenizer, "cuda", train_samples, clamp=True, model_name=args.model_name)
-        with open(f'log/{args.model_name}/structure_clamp_qwt.txt', 'w') as f:
+        train_samples, layer_quant_qwt, except_layer = cal_wandb_to_full(model, args.task, train_data, tokenizer, "cuda", train_samples, clamp=True, model_name=args.model_name)
+        with open(f'log/{args.model_name}/structure_clamp_qwt_c4.txt', 'w') as f:
             f.writelines(f'{type(model)}\n\n{model}')
         if args.profiling:
             set_profiling_enable()

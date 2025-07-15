@@ -1,21 +1,7 @@
-# from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig
-# from datasets import load_dataset
-# tokenizer = AutoTokenizer.from_pretrained('/localssd/lbxj/Qwen2.5-0.5B')
-# test_data = load_dataset("wikitext", "wikitext-2-raw-v1", split="test")
-# train_data = load_dataset("wikitext", "wikitext-2-raw-v1", split="train")
-# dataset = tokenizer(
-#         "\n\n".join(test_data["text"]), return_tensors="pt"
-#     ).input_ids
-# train_samples = dataset.size(1) // 2048
+from datasets import get_dataset_config_names, get_dataset_split_names
 
-# print(train_samples)
+# 查看可用的 config 名
+print(get_dataset_config_names("allenai/c4"))
 
-# dataset = tokenizer(
-#         "\n\n".join(train_data["text"]), return_tensors="pt"
-#     ).input_ids
-# train_samples = dataset.size(1) // 2048
-
-# print(train_samples)
-list = [1, 2, 4]
-with open('log/123.log', 'w') as f:
-    f.writelines(f'{list}')
+# 查看某个 config（比如 en）下的 split 名
+print(get_dataset_split_names("allenai/c4", config_name="en"))

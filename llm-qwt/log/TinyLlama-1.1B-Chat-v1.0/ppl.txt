@@ -8,5 +8,6 @@ clp qwt PPL: 9.155707359313965, trn_spls=256, lyr_qt_qwt=[20], ect_lyr=[0, 1, 2]
 base PPL: 9.445204734802246
 quant PPL: 11.220757484436035
 clamp PPL: 19.778671264648438
->>> RUNNING TIME: 0h-2m-31s  07/14/2025, 17:04:21
+clp qwt PPL: 10.721504211425781, trn_spls=256, lyr_qt_qwt=[20, 21], ect_lyr=[0, 1, 2]
+>>> RUNNING TIME: 0h-5m-8s  07/15/2025, 14:45:52
 

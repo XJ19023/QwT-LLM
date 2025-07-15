@@ -22,3 +22,27 @@
 19 r2_score:        0.08748, quant_loss:      0.02246, qwt_mse:      0.01941
 20 r2_score:        0.07587, quant_loss:      0.03125, qwt_mse:      0.02856
 21 r2_score:        0.11920, quant_loss:      0.06348, qwt_mse:      0.05322
+
+==========train clamp qwt============ lyr_qt_qwt=[20, 21], ect_lyr=[0, 1, 2]
+0 r2_score:        0.46821, quant_loss:      0.00002
+1 r2_score:        0.36940, quant_loss:      0.00010
+2 r2_score:        0.53322, quant_loss:      0.00024
+3 r2_score:        0.62106, quant_loss:      0.00021, qwt_mse:      0.00007
+4 r2_score:        0.09328, quant_loss:      0.00014, qwt_mse:      0.00011
+5 r2_score:        0.11763, quant_loss:      0.00022, qwt_mse:      0.00017
+6 r2_score:        0.10206, quant_loss:      0.00030, qwt_mse:      0.00025
+7 r2_score:        0.28650, quant_loss:      0.00062, qwt_mse:      0.00042
+8 r2_score:        0.16306, quant_loss:      0.00070, qwt_mse:      0.00055
+9 r2_score:        0.09374, quant_loss:      0.00085, qwt_mse:      0.00073
+10 r2_score:       -0.25623, quant_loss:      0.00105
+11 r2_score:        0.11688, quant_loss:      0.00140, qwt_mse:      0.00118
+12 r2_score:        0.08911, quant_loss:      0.00172, qwt_mse:      0.00150
+13 r2_score:        0.09365, quant_loss:      0.00221, qwt_mse:      0.00192
+14 r2_score:        0.09798, quant_loss:      0.00281, qwt_mse:      0.00241
+15 r2_score:        0.09801, quant_loss:      0.00403, qwt_mse:      0.00343
+16 r2_score:        0.10263, quant_loss:      0.00604, qwt_mse:      0.00504
+17 r2_score:        0.08177, quant_loss:      0.00873, qwt_mse:      0.00757
+18 r2_score:        0.07753, quant_loss:      0.01434, qwt_mse:      0.01245
+19 r2_score:        0.07469, quant_loss:      0.02307, qwt_mse:      0.02039
+20 r2_score:        0.06767, quant_loss:      0.03296, qwt_mse:      0.03052
+21 r2_score:        0.11060, quant_loss:      0.06299, qwt_mse:      0.05469

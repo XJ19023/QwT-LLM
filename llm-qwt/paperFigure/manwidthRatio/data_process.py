@@ -15,7 +15,7 @@ import time
 start_time = time.time()
 # ----------------------------------------------------------
 methods = ['quant', 'qwt']
-method = ['qwt'] # this one is better
+method = 'qwt' # this one is better
 
 def sample_with_order(lst, sample_size):
     random_sample = random.sample(lst, sample_size)

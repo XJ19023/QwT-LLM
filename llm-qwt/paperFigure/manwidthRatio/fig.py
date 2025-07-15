@@ -1,10 +1,8 @@
 import os
 import random
 import numpy as np
-from safetensors.torch import load_file
 import torch
 import math
-from safetensors.torch import save_file
 from matplotlib import pyplot as plt
 import torch.nn.functional as F
 import logging
@@ -16,56 +14,45 @@ from matplotlib.ticker import PercentFormatter
 # print(sys.path)
 # exit()
 
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-# 文件输出
-file_handler = logging.FileHandler("data_processing.log", 'w')
-file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
-
-# 终端输出
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(logging.Formatter("%(asctime)s - %(message)s"))
-
-# logger.addHandler(file_handler)
-logger.addHandler(stream_handler)
-
 import time
 start_time = time.time()
 # ----------------------------------------------------------
-import re
-with open('intRatio.txt', "r") as f:
-    log_content = f.read()
 
-# 每行匹配括号里的百分比数值
-pattern = r"\(([\d.]+)%\)"
-matches = re.findall(pattern, log_content)
+extract_tensor = False
+if extract_tensor:
+    import re
+    with open('intRatio_qwt.txt', "r") as f:
+        log_content = f.read()
 
-# 每3个为一组构建二维数组
-values = list(map(float, matches))
-result = [values[i:i+3] for i in range(0, len(values), 3)]
+    # 每行匹配括号里的百分比数值
+    pattern = r"\(\s*([\d.]+)%\)"
+    matches = re.findall(pattern, log_content)
+
+    # 每3个为一组构建二维数组
+    values = list(map(float, matches))
+    result = [values[i:i+3] for i in range(0, len(values), 3)]
+    torch.save(torch.tensor(result), 'tensor.pt')
+    exit()
 
 models = [
-            'bert-base-cola',
-            'bert-base-sst2',
-            'bert-base-mnli',
-            'bert-large-cola',
-            'bert-large-sst2',
-            'bert-large-mnli',
-            'llama-2-7b-hf',
-            'Llama-2-13b-hf',
-            'Meta-Llama-3-8B',
-            'opt-125m',
-            'opt-1.3b',
-            'opt-2.7b',
-            'opt-6.7b',
-            'opt-13b',
+            'Llama-1.1B',
+            'llama-2-7b',
+            'Llama-3-8B',
+            'Qwen2.5-0.5B',
+            'Qwen2.5-1.5B',
+            'Qwen2.5-7B'
             ]
 
 plot_fig = 1
 if plot_fig:
-    tensor = torch.tensor(result).transpose(0, 1)
+    tensor = torch.load('tensor.pt', weights_only=True)
+    even_rows = tensor[::2]  # 偶数行（0, 2, 4...）
+    odd_rows  = tensor[1::2] # 奇数行（1, 3, 5...）
+    tensor_org = even_rows.transpose(0, 1)
+    tensor_qwt = odd_rows.transpose(0, 1)
+
+    print(tensor.shape, tensor_org.shape, tensor_qwt.shape)
+
 
     # 创建柱状图
     fig, ax = plt.subplots(figsize=(5, 3), dpi=300)
@@ -88,10 +75,19 @@ if plot_fig:
     # 设置柱子的宽度
     bar_width = 0.3
     # 迭代 tensor 的第一维度，并生成堆积柱状图
+    xticks = []
+    for idx, item in enumerate(np.arange(0, 6)):
+        xticks.append(item)
+    xticks = torch.tensor(xticks)
+    print(xticks)
+    gap = 0.2
+    ax.bar(xticks-gap, tensor_org[0], width=bar_width, edgecolor='black', color=colors[0], linewidth=0.5, hatch='//', zorder=3, label='INT4')
+    ax.bar(xticks-gap, tensor_org[1], width=bar_width, edgecolor='black', color=colors[1], linewidth=0.5, hatch='//', bottom=tensor_org[0], zorder=3, label='INT5_6')
+    ax.bar(xticks-gap, tensor_org[2], width=bar_width, edgecolor='black', color=colors[2], linewidth=0.5, bottom=tensor_org[0]+tensor_org[1], zorder=3, label='INT7_8')
 
-    ax.bar(np.arange(tensor.size(1)), tensor[0], width=bar_width, edgecolor='black', color=colors[0], linewidth=0.5, hatch='//', zorder=3, label='INT4')
-    ax.bar(np.arange(tensor.size(1)), tensor[1], width=bar_width, edgecolor='black', color=colors[1], linewidth=0.5, hatch='//', bottom=tensor[0], zorder=3, label='INT5_6')
-    ax.bar(np.arange(tensor.size(1)), tensor[2], width=bar_width, edgecolor='black', color=colors[2], linewidth=0.5, bottom=tensor[0]+tensor[1], zorder=3, label='INT7_8')
+    ax.bar(xticks+gap, tensor_qwt[0], width=bar_width, edgecolor='black', color=colors[0], linewidth=0.5, hatch='//', zorder=3)
+    ax.bar(xticks+gap, tensor_qwt[1], width=bar_width, edgecolor='black', color=colors[1], linewidth=0.5, hatch='//', bottom=tensor_qwt[0], zorder=3)
+    ax.bar(xticks+gap, tensor_qwt[2], width=bar_width, edgecolor='black', color=colors[2], linewidth=0.5, bottom=tensor_qwt[0]+tensor_qwt[1], zorder=3)
 
     # plt.hlines(y = 0.5, xmin = -0.5, xmax = 7.5, color ='r', zorder=4)
 
@@ -108,7 +104,7 @@ if plot_fig:
 
     # ax.set_ylabel('Normalized Energy (%)', labelpad=-3)
     # # ax.set_title('Stacked Bar Chart of Tensor with Custom Style')
-
+    plt.tick_params(bottom=False, left=False)
     # 将图例放置在坐标轴框线外的正上方
     plt.legend(loc='upper center', ncol=3, fontsize=9) # 控制图形和文本之间的间距
     # ax.legend(bbox_to_anchor=(0.7, 1.2), ncol=4)
