@@ -20,7 +20,7 @@ import time
 from datetime import datetime
 import sys
 from quant import quantLinear
-from globalVar import (get_save_tensor_enable,
+from globalVar import (increas_iterationCounter,
                        save_tensors,
                        set_save_tensor_enable,
                        set_data_type,
@@ -117,6 +117,8 @@ def evaluate(model, dataset, n_samples=None):
         )
         neg_log_likelihood = loss.float() * length
         nlls.append(neg_log_likelihood)
+
+        _ = increas_iterationCounter()
 
     return torch.exp(torch.stack(nlls).sum() / (n_samples * length))
 
@@ -236,9 +238,6 @@ model = AutoModelForCausalLM.from_pretrained(
     model_path,
     torch_dtype=torch.bfloat16,
     device_map="auto",
-    # trust_remote_code=True,
-    # use_safetensors=True,
-    # low_cpu_mem_usage=True,
     config=config
 )
 
@@ -256,7 +255,6 @@ for name, module in model.named_modules():
         _set_module(model, name, new_layer)
 
 #=======================================================================
-# I think this one should be beter, but the experiments are not
 @torch.no_grad()
 def cal_wandb_to_full(model, task, dataset, tokenizer, device, train_samples=None, clamp=None, model_name=None):
     train_samples = train_samples if train_samples else dataset.size(1) // 2048
@@ -277,35 +275,6 @@ def cal_wandb_to_full(model, task, dataset, tokenizer, device, train_samples=Non
     qwt_begin_block = -1
     layer_quant_qwt = [10000] # quant no_clamp qwt
     except_layer = [10000] # quant no clamp no qwt
-
-    '''
-    if model_name == 'opt-125m':
-        hidden_dim = 768
-        train_samples = 256
-    if model_name == 'opt-1.3b':
-        hidden_dim = 2048
-        train_samples = 256
-    if model_name == 'opt-2.7b':
-        hidden_dim = 2560
-        train_samples = 128
-    if model_name == 'opt-6.7b':
-        hidden_dim = 4096
-        train_samples = 64
-    if model_name == 'opt-13b':
-        hidden_dim = 5120
-        train_samples = 64
-    if model_name == 'Llama-2-13b-hf':
-        hidden_dim = 5120
-        train_samples = 64
-    if model_name == 'Qwen3-1.7B':
-        hidden_dim = 2048
-        train_samples = 256
-    if model_name == 'Qwen3-8B':
-        hidden_dim = 4096
-        train_samples = 128
-        except_layer = [0, 1, 2, 3, 4]
-        # layer_quant_qwt = [3, 4, 12, 15, 16, 21, 32]
-    '''
 
     if task == 'wikitext':
         if model_name == 'TinyLlama-1.1B-Chat-v1.0':
@@ -375,7 +344,6 @@ def cal_wandb_to_full(model, task, dataset, tokenizer, device, train_samples=Non
     with open(f'log/{model_name}/r2_score.txt', 'a') as f:
         f.writelines(f'lyr_qt_qwt={layer_quant_qwt}, ect_lyr={except_layer}\n')
     layer_inputs = torch.empty((train_samples, seq_len, hidden_dim), dtype=torch.bfloat16, device="cuda")
-    # layer_inputs = []
     for i in tqdm(range(train_samples), desc="Before layers..."):
         batch = dataset[:, (i * 2048) : ((i + 1) * 2048)].to(model.device)
         with torch.no_grad():
@@ -386,7 +354,6 @@ def cal_wandb_to_full(model, task, dataset, tokenizer, device, train_samples=Non
             if 'qwen' in args.model_name.lower():
                 hidden_states, position_ids, cache_position, position_embeddings = forward_before_blocks(batch)
             layer_inputs[i] = hidden_states[0].detach()
-            # layer_inputs.append(hidden_states.detach())  # ⚠️ 挪回 CPU
             del batch, hidden_states
             torch.cuda.empty_cache()
 
@@ -564,14 +531,14 @@ if args.eval_clamp_qwt:
         ppl = evaluate(model, test_data, args.n_samples)
         print(f'quant {args.model_name} PPL: {ppl}')
         saved_name = args.model_name.replace("-", "_").replace(".", "_")
-        dir=f'/cephfs/shared/juxin/saved_tensor/qwt/{saved_name}_qwt'
+        dir=f'/cephfs/shared/juxin/saved_tensor/qwt/{saved_name}_qwt_{args.task}'
         os.makedirs(dir, exist_ok=True)
         save_tensors(dir=dir)
     else:
         with open(f'log/{args.model_name}/r2_score.txt', 'a') as f:
             f.writelines(f'\n==========train clamp qwt============ ') 
         train_samples, layer_quant_qwt, except_layer = cal_wandb_to_full(model, args.task, train_data, tokenizer, "cuda", train_samples, clamp=True, model_name=args.model_name)
-        with open(f'log/{args.model_name}/structure_clamp_qwt_c4.txt', 'w') as f:
+        with open(f'log/{args.model_name}/structure_clamp_qwt_{args.task}.txt', 'w') as f:
             f.writelines(f'{type(model)}\n\n{model}')
         if args.profiling:
             set_profiling_enable()

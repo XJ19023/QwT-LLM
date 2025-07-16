@@ -4,8 +4,7 @@ import torch
 import math
 import init
 from functools import partial
-from globalVar import (increas_iterationCounter,
-                       get_iterationCounter,
+from globalVar import (get_iterationCounter,
                        get_save_tensor_enable,
                        append_activation,
                        append_weight,
@@ -45,7 +44,7 @@ def pseudo_quantize_tensor( w,
     else:
         w_int = torch.clamp(torch.round(w / scales) + zeros, min_int, max_int) # quantized INT8
         if get_save_tensor_enable() and 'act' in name:
-            append_activation(name, w_int)
+            append_activation(f'{name}_{get_iterationCounter()}', w_int)
         if clam_quant_en:
             if q_group_size < 0: # per channel
                 w_int = w_int.reshape(-1, 128)

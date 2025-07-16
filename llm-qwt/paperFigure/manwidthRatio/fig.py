@@ -19,9 +19,10 @@ start_time = time.time()
 # ----------------------------------------------------------
 
 extract_tensor = False
+method = 'qwt_c4'
 if extract_tensor:
     import re
-    with open('intRatio_qwt.txt', "r") as f:
+    with open(f'intRatio_{method}.txt', "r") as f:
         log_content = f.read()
 
     # 每行匹配括号里的百分比数值
@@ -31,7 +32,7 @@ if extract_tensor:
     # 每3个为一组构建二维数组
     values = list(map(float, matches))
     result = [values[i:i+3] for i in range(0, len(values), 3)]
-    torch.save(torch.tensor(result), 'tensor.pt')
+    torch.save(torch.tensor(result), f'tensor_{method}.pt')
     exit()
 
 models = [
@@ -45,7 +46,7 @@ models = [
 
 plot_fig = 1
 if plot_fig:
-    tensor = torch.load('tensor.pt', weights_only=True)
+    tensor = torch.load(f'tensor_{method}.pt', weights_only=True)
     even_rows = tensor[::2]  # 偶数行（0, 2, 4...）
     odd_rows  = tensor[1::2] # 奇数行（1, 3, 5...）
     tensor_org = even_rows.transpose(0, 1)
@@ -112,7 +113,7 @@ if plot_fig:
     # plt.subplots_adjust(left=0.05, right=0.995, bottom=0.01, top=0.895)
 
 
-    plt.savefig('man_width_ratio.png')
+    plt.savefig(f'man_width_ratio_{method}.png')
     # plt.savefig('energy.png', bbox_inches='tight')
     # plt.savefig('energy.pdf')
     plt.close()
