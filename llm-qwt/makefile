@@ -22,21 +22,24 @@ vit:
 data:
 	python mycode/data_process.py
 
-all:
-	@bash -c '\
+
+ppl:
+	@methods="--eval_quant --wgt_nbit=4 --act_nbit=4"; \
+	models="Llama-2-13b-hf"; \
+	tasks="wikitext c4"; \
 	start=$$(date +%s); \
-	for model in $(models); do \
-		for task in $(tasks); do \
-			echo "TOKENIZERS_PARALLELISM=false python mycode/llm.py --model_name=$$model --task=$$task ${methods}"; \
-			TOKENIZERS_PARALLELISM=false python mycode/llm.py --model_name=$$model --task=$$task ${methods}; \
+	for model in $$models; do \
+		for task in $$tasks; do \
+			echo "TOKENIZERS_PARALLELISM=false python mycode/llm.py --model_name=$$model --task=$$task $$methods"; \
+			TOKENIZERS_PARALLELISM=false python mycode/llm.py --model_name=$$model --task=$$task $$methods; \
 		done; \
 	done; \
 	end=$$(date +%s); \
 	delta=$$((end - start)); \
 	hours=$$((delta / 3600)); \
 	minutes=$$(((delta % 3600) / 60)); \
-	echo -e "\e[36mTime elapsed: $${hours}h-$${minutes}m\e[0m"; \
-	'
+	echo "\e[36mTime elapsed: $${hours}h-$${minutes}m\e[0m"
+
 save_tensor:
 	@methods="--eval_clamp_qwt --n_samples=2 --save_tensor"; \
 	start=$$(date +%s); \

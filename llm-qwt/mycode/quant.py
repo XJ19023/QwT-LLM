@@ -95,7 +95,9 @@ class quantLinear(torch.nn.Linear):
                  in_features: int,
                  out_features: int,
                  bias: bool = True,
-                 name=None
+                 name=None,
+                 wgt_nbit=4,
+                 act_nbit=8,
                  ) -> None:
         self.in_features = in_features
         self.out_features = out_features
@@ -103,13 +105,13 @@ class quantLinear(torch.nn.Linear):
 
         self.quant_en = False
         self.clamp_en = False
-        self.act_quant = partial(pseudo_quantize_tensor, n_bit=8, name=f'{name}.act')
-        self.wgt_quant = partial(pseudo_quantize_tensor, n_bit=4, name=f'{name}.wgt')
+        self.act_quant = partial(pseudo_quantize_tensor, n_bit=act_nbit, name=f'{name}.act')
+        self.wgt_quant = partial(pseudo_quantize_tensor, n_bit=wgt_nbit, name=f'{name}.wgt')
 
         super().__init__(in_features, out_features, bias)
 
     @staticmethod
-    def set_param(module, name,
+    def set_param(module, name, wgt_nbit=4, act_nbit=8
     ):
         assert isinstance(module, torch.nn.Linear)
         new_module = quantLinear(
@@ -117,6 +119,8 @@ class quantLinear(torch.nn.Linear):
             module.out_features,
             module.bias is not None,
             name=name,
+            wgt_nbit=wgt_nbit,
+            act_nbit=act_nbit,
         )
         new_module.weight = torch.nn.Parameter(module.weight.data.clone())
         if module.bias is not None:

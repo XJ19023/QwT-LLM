@@ -90,6 +90,8 @@ parser.add_argument('--start_block', default=0, type=int)
 parser.add_argument("--local-rank", default=0, type=int)
 parser.add_argument("--batch_size", default=32, type=int)
 parser.add_argument("--num_workers", default=4, type=int)
+parser.add_argument("--wgt_nbit", default=4, type=int)
+parser.add_argument("--act_nbit", default=8, type=int)
 parser.add_argument("--eval_base", action="store_true")
 parser.add_argument("--eval_quant", action="store_true")
 parser.add_argument("--eval_clamp", action="store_true")
@@ -251,7 +253,7 @@ def _set_module(model, submodule_key, module):
 
 for name, module in model.named_modules():
     if isinstance(module, torch.nn.Linear) and name != 'lm_head':
-        new_layer = quantLinear.set_param(module, name=name)
+        new_layer = quantLinear.set_param(module, name=name, wgt_nbit=args.wgt_nbit, act_nbit=args.act_nbit)
         _set_module(model, name, new_layer)
 
 #=======================================================================
@@ -287,6 +289,11 @@ def cal_wandb_to_full(model, task, dataset, tokenizer, device, train_samples=Non
             train_samples = 128
             except_layer = [0, 1, 2, 3]
             layer_quant_qwt = [31]
+        if model_name == 'Llama-2-13b-hf':
+            hidden_dim = 5120
+            train_samples = 128
+            # except_layer = [0, 1, 2, 3]
+            # layer_quant_qwt = [31]
         if model_name == 'Meta-Llama-3-8B':
             hidden_dim = 4096
             train_samples = 128
@@ -318,6 +325,11 @@ def cal_wandb_to_full(model, task, dataset, tokenizer, device, train_samples=Non
             train_samples = 128
             except_layer = [0, 1, 2, 3]
             layer_quant_qwt = [31]
+        if model_name == 'Llama-2-13b-hf':
+            hidden_dim = 5120
+            train_samples = 128
+            # except_layer = [0, 1, 2, 3]
+            # layer_quant_qwt = [31]
         if model_name == 'Meta-Llama-3-8B':
             hidden_dim = 4096
             train_samples = 128
@@ -488,7 +500,7 @@ if args.eval_quant:
     if args.save_tensor:
         set_save_tensor_enable()
         ppl = evaluate(model, test_data, args.n_samples)
-        print(f'quant {args.model_name} PPL: {ppl}')
+        print(f'W{args.wgt_nbit}A{args.act_nbit} {args.model_name} PPL: {ppl}')
         saved_name = args.model_name.replace("-", "_").replace(".", "_")
         dir=f'/cephfs/shared/juxin/saved_tensor/qwt/{saved_name}_quant'
         os.makedirs(dir, exist_ok=True)
@@ -497,9 +509,9 @@ if args.eval_quant:
         with open(f'log/{args.model_name}/structure_quant.txt', 'w') as f:
             f.writelines(f'{type(model)}\n\n{model}')
         ppl = evaluate(model, test_data, args.n_samples)
-        print(f'quant {args.model_name} PPL: {ppl}')
+        print(f'W{args.wgt_nbit}A{args.act_nbit} {args.model_name} PPL: {ppl}')
         with open(f'log/{args.model_name}/ppl.txt', 'a') as f:
-            f.writelines(f'quant PPL: {ppl}\n')
+            f.writelines(f'W{args.wgt_nbit}A{args.act_nbit} PPL: {ppl}\n')
 if args.eval_clamp:
     print(f'---eval clamp---')
     set_quant_state(model, quant=True, clamp=True)
