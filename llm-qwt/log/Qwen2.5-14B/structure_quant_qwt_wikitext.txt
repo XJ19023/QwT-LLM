@@ -1,0 +1,28 @@
+<class 'transformers.models.qwen2.modeling_qwen2.Qwen2ForCausalLM'>
+
+Qwen2ForCausalLM(
+  (model): Qwen2Model(
+    (embed_tokens): Embedding(152064, 5120)
+    (layers): ModuleList(
+      (0-47): 48 x Qwen2DecoderLayer(
+        (self_attn): Qwen2Attention(
+          (q_proj): quantLinear(in_features=5120, out_features=5120, bias=True, quant_en=True, clamp_quant=False)
+          (k_proj): quantLinear(in_features=5120, out_features=1024, bias=True, quant_en=True, clamp_quant=False)
+          (v_proj): quantLinear(in_features=5120, out_features=1024, bias=True, quant_en=True, clamp_quant=False)
+          (o_proj): quantLinear(in_features=5120, out_features=5120, bias=False, quant_en=True, clamp_quant=False)
+        )
+        (mlp): Qwen2MLP(
+          (gate_proj): quantLinear(in_features=5120, out_features=13824, bias=False, quant_en=True, clamp_quant=False)
+          (up_proj): quantLinear(in_features=5120, out_features=13824, bias=False, quant_en=True, clamp_quant=False)
+          (down_proj): quantLinear(in_features=13824, out_features=5120, bias=False, quant_en=True, clamp_quant=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): Qwen2RMSNorm((5120,), eps=1e-05)
+        (post_attention_layernorm): Qwen2RMSNorm((5120,), eps=1e-05)
+      )
+    )
+    (norm): Qwen2RMSNorm((5120,), eps=1e-05)
+    (rotary_emb): Qwen2RotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=5120, out_features=152064, bias=False)
+)

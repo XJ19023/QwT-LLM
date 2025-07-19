@@ -1,0 +1,2 @@
+clp qwt PPL: 6.578194618225098, trn_spls=128, lyr_qt_qwt=[31], ect_lyr=[0, 1, 2, 3]
+clp qwt PPL: 6.243863582611084, trn_spls=128, lyr_qt_qwt=[31], ect_lyr=[0, 1, 2, 3]

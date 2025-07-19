@@ -37,6 +37,8 @@ def gather_tensor_from_multi_processes(input, world_size):
 
     return gathered_tensors
 def lienar_regression(X, Y, block_id=0):
+    X = X.to('cuda')
+    Y = Y.to('cuda')
     X = X.reshape(-1, X.size(-1)).float()
 
     X = gather_tensor_from_multi_processes(X, world_size=args.world_size)
@@ -62,6 +64,8 @@ def lienar_regression(X, Y, block_id=0):
     ss_res = torch.sum((Y - Y_pred).pow(2))
     r2_score = 1 - ss_res / ss_tot
     # _write('block : {}      abs : {:.6f}      r2 : {:.3f}'.format(block_id, abs_loss, r2_score))
+    del X, Y
+    torch.cuda.empty_cache()
     return W, b, r2_score
 def tensor_gpu_memory(tensor, name=None):
     if tensor.is_cuda:
@@ -258,7 +262,7 @@ for name, module in model.named_modules():
 
 #=======================================================================
 @torch.no_grad()
-def cal_wandb_to_full(model, task, dataset, tokenizer, device, train_samples=None, clamp=None, model_name=None):
+def cal_wandb_to_full(model, task, dataset, train_samples=None, clamp=None, model_name=None):
     train_samples = train_samples if train_samples else dataset.size(1) // 2048
     model.eval()
 
@@ -292,8 +296,14 @@ def cal_wandb_to_full(model, task, dataset, tokenizer, device, train_samples=Non
         if model_name == 'Llama-2-13b-hf':
             hidden_dim = 5120
             train_samples = 128
-            # except_layer = [0, 1, 2, 3]
-            # layer_quant_qwt = [31]
+            layer_quant_qwt = [25, 33, 36, 37, 39]
+            qwt_begin_block = 3
+        if model_name == 'llama-13b':
+            hidden_dim = 5120
+            train_samples = 128
+            qwt_begin_block = 3
+            layer_quant_qwt = [7, 19, 33, 37]
+            # qwt_begin_block = 7
         if model_name == 'Meta-Llama-3-8B':
             hidden_dim = 4096
             train_samples = 128
@@ -314,6 +324,11 @@ def cal_wandb_to_full(model, task, dataset, tokenizer, device, train_samples=Non
             hidden_dim = 3584
             train_samples = 128
             layer_quant_qwt = [23, 24, 25, 26, 27]
+        if model_name == 'Qwen2.5-14B':
+            hidden_dim = 5120
+            train_samples = 128
+            # layer_quant_qwt = [41, 42, 43, 44]
+            # qwt_begin_block = 2
     if task == 'c4':
         if model_name == 'TinyLlama-1.1B-Chat-v1.0':
             hidden_dim = 2048
@@ -328,8 +343,14 @@ def cal_wandb_to_full(model, task, dataset, tokenizer, device, train_samples=Non
         if model_name == 'Llama-2-13b-hf':
             hidden_dim = 5120
             train_samples = 128
+            except_layer = [0, 1, 2, 3]
+            layer_quant_qwt = [25, 33, 34, 35, 39]
+        if model_name == 'llama-13b':
+            hidden_dim = 5120
+            train_samples = 128
+            qwt_begin_block = 3
             # except_layer = [0, 1, 2, 3]
-            # layer_quant_qwt = [31]
+            layer_quant_qwt = [6, 18, 32, 36]
         if model_name == 'Meta-Llama-3-8B':
             hidden_dim = 4096
             train_samples = 128
@@ -353,9 +374,9 @@ def cal_wandb_to_full(model, task, dataset, tokenizer, device, train_samples=Non
 
     # train_samples = 16
         
-    with open(f'log/{model_name}/r2_score.txt', 'a') as f:
+    with open(f'log/{model_name}/r2_score_{task}.txt', 'a') as f:
         f.writelines(f'lyr_qt_qwt={layer_quant_qwt}, ect_lyr={except_layer}\n')
-    layer_inputs = torch.empty((train_samples, seq_len, hidden_dim), dtype=torch.bfloat16, device="cuda")
+    layer_inputs = torch.empty((train_samples, seq_len, hidden_dim), dtype=torch.bfloat16, device="cpu")
     for i in tqdm(range(train_samples), desc="Before layers..."):
         batch = dataset[:, (i * 2048) : ((i + 1) * 2048)].to(model.device)
         with torch.no_grad():
@@ -365,15 +386,17 @@ def cal_wandb_to_full(model, task, dataset, tokenizer, device, train_samples=Non
                 hidden_states, position_ids, past_key_values, use_cache, cache_position, position_embeddings = forward_before_blocks(batch)
             if 'qwen' in args.model_name.lower():
                 hidden_states, position_ids, cache_position, position_embeddings = forward_before_blocks(batch)
-            layer_inputs[i] = hidden_states[0].detach()
+            layer_inputs[i] = hidden_states[0].detach().cpu()
             del batch, hidden_states
             torch.cuda.empty_cache()
 
     layer_inputs_full = layer_inputs
     for layer_idx, layer in tqdm(enumerate(layers), total=len(layers), desc="In layers"):
-        layer_outputs = torch.empty((train_samples, seq_len, hidden_dim), dtype=torch.bfloat16, device="cuda")
-        layer_outputs_quant = torch.empty((train_samples, seq_len, hidden_dim), dtype=torch.bfloat16, device="cuda")
+        layer_outputs = torch.empty((train_samples, seq_len, hidden_dim), dtype=torch.bfloat16, device="cpu")
+        layer_outputs_quant = torch.empty((train_samples, seq_len, hidden_dim), dtype=torch.bfloat16, device="cpu")
         for input_idx, (layer_input, layer_input_full) in enumerate(zip(layer_inputs, layer_inputs_full)):
+            layer_input = layer_input.to('cuda')
+            layer_input_full = layer_input_full.to('cuda')
             layer_input.unsqueeze_(0)
             layer_input_full.unsqueeze_(0)
             '''
@@ -405,7 +428,7 @@ def cal_wandb_to_full(model, task, dataset, tokenizer, device, train_samples=Non
                 layer_output = layer(layer_input_full, position_ids=position_ids, past_key_values=past_key_values, use_cache=use_cache, cache_position=cache_position, position_embeddings=position_embeddings)
             if 'qwen' in args.model_name.lower():
                 layer_output = layer(layer_input_full, position_ids=position_ids, cache_position=cache_position, position_embeddings=position_embeddings)
-            layer_outputs[input_idx] = layer_output[0][0].detach()
+            layer_outputs[input_idx] = layer_output[0][0].detach().cpu()
             set_quant_state(layer, quant=True, clamp=clamp)
             if layer_idx in layer_quant_qwt:
                 set_quant_state(layer, quant=True, clamp=False)
@@ -415,9 +438,9 @@ def cal_wandb_to_full(model, task, dataset, tokenizer, device, train_samples=Non
                 layer_output_quant = layer(layer_input, position_ids=position_ids, past_key_values=past_key_values, use_cache=use_cache, cache_position=cache_position, position_embeddings=position_embeddings)
             if 'qwen' in args.model_name.lower():
                 layer_output_quant = layer(layer_input, position_ids=position_ids, cache_position=cache_position, position_embeddings=position_embeddings)
-            layer_outputs_quant[input_idx] = layer_output_quant[0][0].detach()
+            layer_outputs_quant[input_idx] = layer_output_quant[0][0].detach().cpu()
         loss = nn.MSELoss()
-        quant_loss = loss(layer_outputs, layer_outputs_quant)
+        quant_loss = loss(layer_outputs.float(), layer_outputs_quant.float())
         W, b, r2_score = lienar_regression(layer_inputs, layer_outputs - layer_outputs_quant, block_id=layer_idx)
         if layer_idx > qwt_begin_block and r2_score > 0 and layer_idx not in except_layer:
             layer.set_qwt_para(W, b, r2_score)
@@ -425,6 +448,7 @@ def cal_wandb_to_full(model, task, dataset, tokenizer, device, train_samples=Non
             if layer_idx in layer_quant_qwt:
                 set_quant_state(layer, quant=True, clamp=False)
             for input_idx, layer_input in enumerate(layer_inputs):
+                layer_input = layer_input.to('cuda')
                 layer_input.unsqueeze_(0)
                 if 'opt' in args.model_name.lower():
                     layer_output_wandb = layer(layer_input, causal_attention_mask, use_cache=use_cache)
@@ -432,15 +456,16 @@ def cal_wandb_to_full(model, task, dataset, tokenizer, device, train_samples=Non
                     layer_output_wandb = layer(layer_input, position_ids=position_ids, past_key_values=past_key_values, use_cache=use_cache, cache_position=cache_position, position_embeddings=position_embeddings)
                 if 'qwen' in args.model_name.lower():
                     layer_output_wandb = layer(layer_input, position_ids=position_ids, cache_position=cache_position, position_embeddings=position_embeddings)
-                layer_outputs_quant[input_idx] = layer_output_wandb[0][0].detach()
-            qwt_loss = loss(layer_outputs_quant, layer_outputs)
-            with open(f'log/{model_name}/r2_score.txt', 'a') as f:
+                layer_outputs_quant[input_idx] = layer_output_wandb[0][0].detach().cpu()
+            qwt_loss = loss(layer_outputs_quant.float(), layer_outputs.float())
+            with open(f'log/{model_name}/r2_score_{task}.txt', 'a') as f:
                 f.writelines(f'{layer_idx} r2_score: {r2_score:>14.5f}, quant_loss: {quant_loss:>12.5f}, qwt_mse: {qwt_loss:>12.5f}\n')
             # if qwt_loss > mx_accept_mse:
             if qwt_loss > quant_loss:
                 layer.set_qwt_para(None, None, 0)
                 set_quant_state(layer, quant=True, clamp=False)
                 for input_idx, layer_input in enumerate(layer_inputs):
+                    layer_input = layer_input.to('cuda')
                     layer_input.unsqueeze_(0)
                     if 'opt' in args.model_name.lower():
                         layer_output_wandb = layer(layer_input, causal_attention_mask, use_cache=use_cache)
@@ -448,14 +473,15 @@ def cal_wandb_to_full(model, task, dataset, tokenizer, device, train_samples=Non
                         layer_output_wandb = layer(layer_input, position_ids=position_ids, past_key_values=past_key_values, use_cache=use_cache, cache_position=cache_position, position_embeddings=position_embeddings)
                     if 'qwen' in args.model_name.lower():
                         layer_output_wandb = layer(layer_input, position_ids=position_ids, cache_position=cache_position, position_embeddings=position_embeddings)
-                    layer_outputs_quant[input_idx] = layer_output_wandb[0][0].detach()
+                    layer_outputs_quant[input_idx] = layer_output_wandb[0][0].detach().cpu()
             layer_inputs = layer_outputs_quant
         else:
-            with open(f'log/{model_name}/r2_score.txt', 'a') as f:
+            with open(f'log/{model_name}/r2_score_{task}.txt', 'a') as f:
                 f.writelines(f'{layer_idx} r2_score: {r2_score:>14.5f}, quant_loss: {quant_loss:>12.5f}\n')           
             layer.set_qwt_para(None, None, 0)
             set_quant_state(layer, quant=True, clamp=False)
             for input_idx, layer_input in enumerate(layer_inputs):
+                layer_input = layer_input.to('cuda')
                 layer_input.unsqueeze_(0)
                 if 'opt' in args.model_name.lower():
                     layer_output_wandb = layer(layer_input, causal_attention_mask, use_cache=use_cache)
@@ -463,7 +489,7 @@ def cal_wandb_to_full(model, task, dataset, tokenizer, device, train_samples=Non
                     layer_output_wandb = layer(layer_input, position_ids=position_ids, past_key_values=past_key_values, use_cache=use_cache, cache_position=cache_position, position_embeddings=position_embeddings)
                 if 'qwen' in args.model_name.lower():
                     layer_output_wandb = layer(layer_input, position_ids=position_ids, cache_position=cache_position, position_embeddings=position_embeddings)
-                layer_outputs_quant[input_idx] = layer_output_wandb[0][0].detach()
+                layer_outputs_quant[input_idx] = layer_output_wandb[0][0].detach().cpu()
             layer_inputs = layer_outputs_quant
         layer_inputs_full = layer_outputs
         model.cuda()
@@ -523,22 +549,8 @@ if args.eval_clamp:
         f.writelines(f'clamp PPL: {ppl}\n')
 if args.eval_quant_qwt:
     print(f'---eval {args.model_name} quant qwt---')
-    with open(f'log/{args.model_name}/r2_score.txt', 'a') as f:
-        f.writelines(f'\n==========train quant qwt============ ') 
-    # with open('log/123.log', 'a') as f:
-    #     f.writelines(f'========QwT==============\n')
-    cal_wandb_to_full(model, train_data, tokenizer, "cuda", train_samples, clamp=False, model_name=args.model_name)
-    with open(f'log/{args.model_name}/structure_quant_qwt.txt', 'w') as f:
-        f.writelines(f'{type(model)}\n\n{model}')   
-    # set_quant_state(model, quant=True, clamp=False) # 需要手动修改clamp
-    ppl = evaluate(model, test_data, args.n_samples)
-    print(f'quant qwt PPL: {ppl}')
-    with open(f'log/{args.model_name}/ppl.txt', 'a') as f:
-        f.writelines(f'quant qwt PPL: {ppl}\n')
-if args.eval_clamp_qwt:
-    print(f'---eval {args.model_name} clamp qwt---')
     if args.save_tensor:
-        _, _, _ = cal_wandb_to_full(model, args.task, train_data, tokenizer, "cuda", train_samples, clamp=True, model_name=args.model_name)
+        _, _, _ = cal_wandb_to_full(model, args.task, train_data, train_samples, clamp=False, model_name=args.model_name)
         set_save_tensor_enable()
         ppl = evaluate(model, test_data, args.n_samples)
         print(f'quant {args.model_name} PPL: {ppl}')
@@ -547,16 +559,45 @@ if args.eval_clamp_qwt:
         os.makedirs(dir, exist_ok=True)
         save_tensors(dir=dir)
     else:
-        with open(f'log/{args.model_name}/r2_score.txt', 'a') as f:
-            f.writelines(f'\n==========train clamp qwt============ ') 
-        train_samples, layer_quant_qwt, except_layer = cal_wandb_to_full(model, args.task, train_data, tokenizer, "cuda", train_samples, clamp=True, model_name=args.model_name)
+        with open(f'log/{args.model_name}/r2_score_{args.task}.txt', 'a') as f:
+            f.writelines(f'\n==========train quant qwt====={args.task}======= ') 
+        train_samples, layer_quant_qwt, except_layer = cal_wandb_to_full(model, args.task, train_data, train_samples, clamp=False, model_name=args.model_name)
+        with open(f'log/{args.model_name}/structure_quant_qwt_{args.task}.txt', 'w') as f:
+            f.writelines(f'{type(model)}\n\n{model}')
+        if args.profiling:
+            set_profiling_enable()
+        ppl = evaluate(model, test_data, args.n_samples)
+        print(f'quant qwt PPL: {ppl}')
+        with open(f'log/{args.model_name}/ppl_{args.task}.txt', 'a') as f:
+            f.writelines(f'qnt qwt PPL: {ppl}, trn_spls={train_samples}, lyr_qt_qwt={layer_quant_qwt}, ect_lyr={except_layer}\n')
+
+    if args.profiling:
+        dst = f'log/{args.model_name}/profiling.txt'
+        if os.path.exists(dst):
+            os.remove(dst)
+        shutil.move('log/profiling.txt', dst)
+if args.eval_clamp_qwt:
+    print(f'---eval {args.model_name} clamp qwt---')
+    if args.save_tensor:
+        _, _, _ = cal_wandb_to_full(model, args.task, train_data, train_samples, clamp=True, model_name=args.model_name)
+        set_save_tensor_enable()
+        ppl = evaluate(model, test_data, args.n_samples)
+        print(f'quant {args.model_name} PPL: {ppl}')
+        saved_name = args.model_name.replace("-", "_").replace(".", "_")
+        dir=f'/cephfs/shared/juxin/saved_tensor/qwt/{saved_name}_qwt_{args.task}'
+        os.makedirs(dir, exist_ok=True)
+        save_tensors(dir=dir)
+    else:
+        with open(f'log/{args.model_name}/r2_score_{args.task}.txt', 'a') as f:
+            f.writelines(f'\n==========train clamp qwt====={args.task}======= ') 
+        train_samples, layer_quant_qwt, except_layer = cal_wandb_to_full(model, args.task, train_data, train_samples, clamp=True, model_name=args.model_name)
         with open(f'log/{args.model_name}/structure_clamp_qwt_{args.task}.txt', 'w') as f:
             f.writelines(f'{type(model)}\n\n{model}')
         if args.profiling:
             set_profiling_enable()
         ppl = evaluate(model, test_data, args.n_samples)
         print(f'clamp qwt PPL: {ppl}')
-        with open(f'log/{args.model_name}/ppl.txt', 'a') as f:
+        with open(f'log/{args.model_name}/ppl_{args.task}.txt', 'a') as f:
             f.writelines(f'clp qwt PPL: {ppl}, trn_spls={train_samples}, lyr_qt_qwt={layer_quant_qwt}, ect_lyr={except_layer}\n')
 
     if args.profiling:
@@ -573,6 +614,6 @@ minute = (duration % 3600) // 60
 second = duration % 60
 print(f'>>> RUNNING TIME: {int(hour)}h-{int(minute)}m-{int(second)}s\n')
 with open(f'log/{args.model_name}/ppl.txt', 'a') as f:
-    f.writelines(f'>>> RUNNING TIME: {int(hour)}h-{int(minute)}m-{int(second)}s  {current_time}\n\n')
+    f.writelines(f'>>> RUNNING TIME {args.task}: {int(hour)}h-{int(minute)}m-{int(second)}s  {current_time}\n\n')
 
 

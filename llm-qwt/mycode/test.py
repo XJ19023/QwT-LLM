@@ -1,7 +1,6 @@
-from datasets import get_dataset_config_names, get_dataset_split_names
+import torch
 
-# 查看可用的 config 名
-print(get_dataset_config_names("allenai/c4"))
+tensor = torch.empty(2, 4, device='cpu')
+print(tensor)
 
-# 查看某个 config（比如 en）下的 split 名
-print(get_dataset_split_names("allenai/c4", config_name="en"))
+del tensor

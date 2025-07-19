@@ -1,4 +1,4 @@
-models = opt-125m TinyLlama-1.1B-Chat-v1.0 llama-2-7b-hf Meta-Llama-3-8B Llama-2-13b-hf opt-125m opt-1.3b opt-2.7b opt-6.7b opt-13b Qwen2.5-0.5B Qwen2.5-1.5B Qwen2.5-7B
+models = opt-125m TinyLlama-1.1B-Chat-v1.0 llama-2-7b-hf Meta-Llama-3-8B Llama-2-13b-hf llama-13b opt-125m opt-1.3b opt-2.7b opt-6.7b opt-13b Qwen2.5-0.5B Qwen2.5-1.5B Qwen2.5-7B Qwen2.5-14B
 models = TinyLlama-1.1B-Chat-v1.0 llama-2-7b-hf Meta-Llama-3-8B Qwen2.5-0.5B Qwen2.5-1.5B Qwen2.5-7B
 methods = --eval_base --eval_quant --eval_clamp --eval_quant_qwt --eval_clamp_qwt
 
@@ -11,7 +11,7 @@ qwen:
 llama:
 	TOKENIZERS_PARALLELISM=false python mycode/llm.py --model_name=Qwen3-8B --eval_clamp_qwt
 tmp:
-	TOKENIZERS_PARALLELISM=false python mycode/llm.py --model_name=Qwen2.5-0.5B --eval_quant --n_samples=3 --task=c4 --save_tensor
+	TOKENIZERS_PARALLELISM=false python mycode/llm.py --model_name=llama-13b --eval_quant_qwt --task=wikitext
 
 opt:
 	TOKENIZERS_PARALLELISM=false python mycode/llm.py --model_name=opt-2.7b --n_samples=40 --eval_clamp_qwt
@@ -24,9 +24,9 @@ data:
 
 
 ppl:
-	@methods="--eval_quant --wgt_nbit=4 --act_nbit=4"; \
-	models="Llama-2-13b-hf"; \
-	tasks="wikitext c4"; \
+	@methods="--eval_clamp_qwt --wgt_nbit=4 --act_nbit=8 --n_samples=40"; \
+	models="Qwen2.5-14B"; \
+	tasks="wikitext"; \
 	start=$$(date +%s); \
 	for model in $$models; do \
 		for task in $$tasks; do \

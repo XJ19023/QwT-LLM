@@ -1,0 +1,23 @@
+base PPL: 5.292505264282227
+W4A8 PPL: 6.9947099685668945
+clamp PPL: 12.15563678741455
+>>> RUNNING TIME wikitext: 0h-10m-50s  07/17/2025, 17:19:36
+
+>>> RUNNING TIME wikitext: 0h-22m-55s  07/17/2025, 19:13:40
+
+>>> RUNNING TIME wikitext: 0h-21m-10s  07/17/2025, 19:56:50
+
+>>> RUNNING TIME wikitext: 0h-18m-17s  07/17/2025, 21:12:24
+
+>>> RUNNING TIME wikitext: 0h-17m-31s  07/17/2025, 22:42:17
+
+>>> RUNNING TIME wikitext: 0h-17m-56s  07/17/2025, 23:36:42
+
+>>> RUNNING TIME wikitext: 0h-18m-53s  07/18/2025, 07:56:36
+
+>>> RUNNING TIME wikitext: 0h-19m-19s  07/18/2025, 10:12:50
+
+>>> RUNNING TIME wikitext: 0h-20m-16s  07/18/2025, 10:39:25
+
+>>> RUNNING TIME wikitext: 0h-19m-27s  07/19/2025, 20:17:36
+

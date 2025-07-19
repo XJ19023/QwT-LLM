@@ -21,6 +21,7 @@
 - **2025-07-14**: Evaluate base, quant, clamp on C4. 
 - **2025-07-16**: Add save_tensor. 
 - **2025-07-16**: Add llama-2-13b, qwt under evaluate. 
+- **2025-07-16**: Evaluate llama-13b, llama-2-13b, Qwen2.5-14b, not good. 
 ---
 
 

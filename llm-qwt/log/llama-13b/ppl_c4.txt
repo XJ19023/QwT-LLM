@@ -1,0 +1,15 @@
+base PPL: 6.61334753036499
+W4A8 PPL: 7.078292369842529
+clamp PPL: 8.713400840759277
+qnt qwt PPL: 6.818742752075195, trn_spls=128, lyr_qt_qwt=[2, 6, 18, 36], ect_lyr=[10000]
+clp qwt PPL: 7.2122321128845215, trn_spls=128, lyr_qt_qwt=[10000], ect_lyr=[10000]
+qnt qwt PPL: 6.818742752075195, trn_spls=128, lyr_qt_qwt=[2, 6, 18, 36], ect_lyr=[10000]
+clp qwt PPL: 7.1821699142456055, trn_spls=128, lyr_qt_qwt=[2, 6, 18, 36], ect_lyr=[10000]
+clp qwt PPL: 7.154707431793213, trn_spls=128, lyr_qt_qwt=[6, 18, 36], ect_lyr=[10000]
+clp qwt PPL: 7.171722412109375, trn_spls=128, lyr_qt_qwt=[27], ect_lyr=[10000]
+clp qwt PPL: 7.167359828948975, trn_spls=128, lyr_qt_qwt=[7, 18, 36], ect_lyr=[10000]
+clp qwt PPL: 7.149985313415527, trn_spls=128, lyr_qt_qwt=[6, 18, 32, 36], ect_lyr=[10000]
+clp qwt PPL: 7.1812052726745605, trn_spls=128, lyr_qt_qwt=[6, 18, 32, 36], ect_lyr=[10000]
+clp qwt PPL: 7.155458927154541, trn_spls=128, lyr_qt_qwt=[6, 18, 32, 36], ect_lyr=[10000]
+
+clp qwt PPL: 7.149985313415527, trn_spls=128, lyr_qt_qwt=[6, 18, 32, 36], ect_lyr=[10000]

@@ -14,3 +14,10 @@ clp qwt PPL: 7.792908191680908, trn_spls=128, lyr_qt_qwt=[31], ect_lyr=[0, 1, 2,
 >>> RUNNING TIME: 0h-10m-26s  07/15/2025, 14:51:57
 
 
+>>> RUNNING TIME wikitext: 0h-11m-5s  07/17/2025, 20:22:02
+
+clamp PPL: 9.117877006530762
+>>> RUNNING TIME wikitext: 0h-1m-44s  07/17/2025, 20:34:16
+
+>>> RUNNING TIME wikitext: 0h-11m-6s  07/17/2025, 20:39:36
+
